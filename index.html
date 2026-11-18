@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}</style>
+</head><body>
+<title>Shift Report Builder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one working column — header band, two upload trays side by side, results list below. */
+:root {
+  --bg: #f3f5f8; --panel: #ffffff; --ink: #1c2638; --muted: #5d6a7e; --line: #d8dee7;
+  --navy: #1f2a44; --teal: #2a9d8f; --teal-soft: #e3f3f1; --gold: #e9c46a;
+  --up: #1f8a5b; --down: #c4452f; --warn-bg: #fdf3e1; --warn-ink: #8a5a0b; --err-bg: #fbe9e6;
+  --band-ink: #ffffff; --band-sub: #c9d2df;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161f; --panel: #19202c; --ink: #e6ebf2; --muted: #9aa6b8; --line: #2b3444;
+  --navy: #0c1220; --teal: #43b5a6; --teal-soft: #17302e; --gold: #e9c46a;
+  --up: #4cc38a; --down: #f0806b; --warn-bg: #2f2614; --warn-ink: #f0c56d; --err-bg: #34201d;
+  --band-ink: #ffffff; --band-sub: #a9b4c4; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11161f; --panel: #19202c; --ink: #e6ebf2; --muted: #9aa6b8; --line: #2b3444;
+  --navy: #0c1220; --teal: #43b5a6; --teal-soft: #17302e; --gold: #e9c46a;
+  --up: #4cc38a; --down: #f0806b; --warn-bg: #2f2614; --warn-ink: #f0c56d; --err-bg: #34201d;
+  --band-ink: #ffffff; --band-sub: #a9b4c4; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5 }
+.wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+header.band { background: var(--navy); color: var(--band-ink) }
+header.band .wrap { padding-block: 28px 24px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between }
+h1 { margin: 0; font-size: 1.7rem; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance }
+.sub { margin: 4px 0 0; color: var(--band-sub); font-size: .92rem; max-width: 60ch }
+.engine { display: inline-flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--band-sub); background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); border-radius: 999px; padding: 5px 12px }
+.engine .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 1.2s ease-in-out infinite }
+.engine.ready .dot { background: #4cc38a; animation: none }
+.engine.failed .dot { background: #f0806b; animation: none }
+@keyframes pulse { 50% { opacity: .35 } }
+@media (prefers-reduced-motion: reduce) { .engine .dot { animation: none } }
+main.wrap { padding-block: 24px 48px; display: grid; gap: 22px }
+.trays { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px }
+@media (max-width: 760px) { .trays { grid-template-columns: 1fr } }
+.tray { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start }
+.tray h2 { margin: 0; font-size: 1rem; font-weight: 600; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap }
+.tray h2 small { font-weight: 400; color: var(--muted); font-size: .82rem }
+.drop { border: 1.5px dashed var(--line); border-radius: 8px; padding: 18px 14px; text-align: center; color: var(--muted); font-size: .9rem; cursor: pointer; transition: border-color .15s, background .15s }
+.drop:hover, .drop.over { border-color: var(--teal); background: var(--teal-soft); color: var(--ink) }
+.drop:focus-within { outline: 2px solid var(--teal); outline-offset: 2px }
+.drop strong { color: var(--teal); font-weight: 600 }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none }
+.files { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none }
+.file { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; font-size: .86rem; min-width: 0 }
+.file .what { font-weight: 600; min-width: 0 }
+.file .fn { grid-column: 1 / -1; color: var(--muted); font-size: .76rem; overflow-wrap: anywhere }
+.file .amt { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-size: .84rem }
+.file.bad { background: var(--err-bg); border-color: transparent }
+.file .err { grid-column: 1 / -1; color: var(--down); font-size: .8rem }
+.x { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 1.05rem; line-height: 1; padding: 2px 4px; border-radius: 4px }
+.x:hover { color: var(--down) } .x:focus-visible { outline: 2px solid var(--teal) }
+.tag { display: inline-block; font-size: .7rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; background: var(--teal-soft); color: var(--teal); margin-left: 6px; vertical-align: 1px }
+.tag.h { background: var(--warn-bg); color: var(--warn-ink) }
+.hint { margin: 0; color: var(--muted); font-size: .82rem }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center }
+button.primary, button.ghost { font: inherit; font-weight: 600; border-radius: 8px; padding: 10px 18px; cursor: pointer; border: 1px solid transparent }
+button.primary { background: var(--teal); color: #fff }
+button.primary:hover:not(:disabled) { filter: brightness(1.06) }
+button.primary:disabled { opacity: .45; cursor: not-allowed }
+button.ghost { background: transparent; border-color: var(--line); color: var(--ink) }
+button.ghost:hover { border-color: var(--teal) }
+button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px }
+.status { color: var(--muted); font-size: .88rem }
+.results { display: grid; gap: 12px }
+.results h2 { margin: 6px 0 0; font-size: 1.05rem }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; grid-template-columns: 1fr auto; gap: 10px 18px; align-items: center; min-width: 0 }
+.card .t { font-weight: 700; font-size: 1.02rem }
+.card .fname { color: var(--muted); font-size: .8rem; overflow-wrap: anywhere }
+.figs { display: flex; flex-wrap: wrap; gap: 6px 22px; grid-column: 1 / -1 }
+.fig { display: grid }
+.fig span { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em }
+.fig b { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 1.02rem }
+.chg.up { color: var(--up) } .chg.down { color: var(--down) }
+.notes { grid-column: 1 / -1; margin: 0; padding: 8px 10px; background: var(--warn-bg); color: var(--warn-ink); border-radius: 7px; font-size: .82rem; list-style: none; display: grid; gap: 2px }
+.card.fail { background: var(--err-bg); border-color: transparent }
+.card.fail pre { grid-column: 1 / -1; margin: 0; white-space: pre-wrap; font-family: var(--f-num); font-size: .8rem; color: var(--ink) }
+.saved { font-size: .8rem; color: var(--up) }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: s }
+.steps li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: .86rem; color: var(--muted); min-width: 0 }
+.steps li::before { content: counter(s); display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--navy); color: #fff; font-size: .75rem; font-weight: 700; margin-right: 8px }
+.steps b { color: var(--ink) }
+@media (max-width: 640px) { .steps { grid-template-columns: 1fr } }
+footer { color: var(--muted); font-size: .8rem }
+</style>
+
+<header class="band">
+  <div class="wrap">
+    <div>
+      <h1>Shift Report Builder</h1>
+      <p class="sub">Drop in the Transact “Item Sales Detail” exports and get the Morning, Evening and Harvest weekly reports back as Excel files.</p>
+    </div>
+    <div class="engine" id="engine" role="status"><span class="dot"></span><span id="engineText">Getting the report engine ready…</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <ol class="steps">
+    <li><b>Today’s exports.</b> Morning and Evening together is fine; they become separate reports. Add a station-only export (like Yum Bakery) and it’s merged into its shift.</li>
+    <li><b>Comparison exports</b> (optional). The previous trading day, or the same day last week. Each shift is matched to its shift.</li>
+    <li><b>Build, then download.</b> Files are read in this browser. Nothing is uploaded anywhere.</li>
+  </ol>
+
+  <section class="trays">
+    <div class="tray">
+      <h2>Exports to report on <small>.xls or .xlsx · Blue Wall shifts or Harvest weekly</small></h2>
+      <label class="drop" id="dropCur" for="inCur">
+        <input type="file" id="inCur" accept=".xls,.xlsx" multiple>
+        <span><strong>Choose files</strong> or drop them here</span>
+      </label>
+      <ul class="files" id="listCur"></ul>
+    </div>
+    <div class="tray">
+      <h2>Compare with <small>optional</small></h2>
+      <label class="drop" id="dropPrev" for="inPrev">
+        <input type="file" id="inPrev" accept=".xls,.xlsx" multiple>
+        <span><strong>Choose files</strong> or drop them here</span>
+      </label>
+      <ul class="files" id="listPrev"></ul>
+      <p class="hint">Without these, the reports still build; the comparison columns show “–”.</p>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="primary" id="build" disabled>Build reports</button>
+    <span class="status" id="status">Add at least one export to start.</span>
+  </div>
+
+  <section class="results" id="results" hidden>
+    <div class="actions" style="justify-content:space-between">
+      <h2>Reports</h2>
+      <button class="ghost" id="saveAll" hidden>Download all (.zip)</button>
+    </div>
+    <div id="cards" class="results"></div>
+  </section>
+
+  <footer>Every report is checked before it’s built: item totals must match the register’s category totals and grand total, or the file is refused with the reason.</footer>
+</main>
+
+<script src="py/pyodide.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const money = (v) => (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const state = { py: null, cur: [], prev: [], seq: 0, reports: [] };
+  let downloads = null;
+  try { window.claude?.use?.('downloads').then((d) => { downloads = d; }).catch(() => {}); } catch (e) {}
+
+  const setEngine = (cls, text) => { const e = $('engine'); e.className = 'engine ' + cls; $('engineText').textContent = text; };
+
+  async function boot() {
+    try {
+      const base = new URL('py/', location.href).href;
+      const bin = async (u) => { const t = (await (await fetch(u)).text()).trim(); const s = atob(t);
+        const a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; };
+      const stdlib = await bin('py/python_stdlib.b64.txt');
+      const realFetch = window.fetch.bind(window);
+      window.fetch = (u, o) => String(u && u.url || u).includes('python_stdlib.zip')
+        ? Promise.resolve(new Response(stdlib, { headers: { 'Content-Type': 'application/zip' } })) : realFetch(u, o);
+      const py = await loadPyodide({ indexURL: base, stdout: () => {}, stderr: () => {} });
+      window.fetch = realFetch;
+      for (const n of ['et_xmlfile', 'openpyxl', 'xlrd']) py.unpackArchive((await bin('lib/' + n + '.b64.txt')).buffer, 'wheel');
+      const app = (await bin('lib/app.b64.txt')).buffer;
+      py.FS.mkdirTree('/home/pyodide/app');
+      py.unpackArchive(app, 'zip', { extractDir: '/home/pyodide/app' });
+      py.runPython("import sys; sys.path.insert(0,'/home/pyodide/app'); import engine");
+      py.FS.mkdirTree('/tmp/in');
+      state.py = py;
+      setEngine('ready', 'Ready');
+      await describeAll();
+    } catch (e) {
+      console.error(e);
+      setEngine('failed', 'The report engine could not load. Reload the page to try again.');
+    }
+  }
+
+  function addFiles(which, fileList) {
+    const jobs = [...fileList].filter((f) => /\.xlsx?$/i.test(f.name)).map(async (f) => {
+      const ext = f.name.toLowerCase().endsWith('.xlsx') ? '.xlsx' : '.xls';
+      const id = which + '_' + (state.seq++);
+      state[which].push({ id, name: f.name, path: '/tmp/in/' + id + ext, bytes: new Uint8Array(await f.arrayBuffer()), info: null });
+    });
+    const skipped = [...fileList].length - jobs.length;
+    Promise.all(jobs).then(() => {
+      if (skipped) $('status').textContent = skipped + ' file(s) skipped: only .xls and .xlsx exports can be used.';
+      describeAll();
+    });
+  }
+
+  async function describeAll() {
+    renderLists();
+    if (!state.py) { updateBuild(); return; }
+    for (const which of ['cur', 'prev']) {
+      const todo = state[which].filter((f) => !f.info);
+      if (!todo.length) continue;
+      for (const f of todo) state.py.FS.writeFile(f.path, f.bytes);
+      state.py.globals.set('_paths', state.py.toPy(todo.map((f) => f.path)));
+      const res = JSON.parse(state.py.runPython('engine.describe(list(_paths))'));
+      res.forEach((r, i) => { todo[i].info = r; });
+    }
+    renderLists(); updateBuild();
+  }
+
+  function renderLists() {
+    for (const which of ['cur', 'prev']) {
+      const ul = $(which === 'cur' ? 'listCur' : 'listPrev');
+      ul.replaceChildren(...state[which].map((f) => {
+        const li = document.createElement('li'); li.className = 'file';
+        const i = f.info;
+        if (i && !i.ok) li.classList.add('bad');
+        const what = document.createElement('span'); what.className = 'what';
+        what.textContent = i ? (i.label || 'Unrecognised export') : 'Reading…';
+        if (i && i.kind === 'harvest') { const t = document.createElement('span'); t.className = 'tag h'; t.textContent = 'Harvest weekly'; what.append(t); }
+        else if (i && i.kind === 'daily') { const t = document.createElement('span'); t.className = 'tag'; t.textContent = i.stations + ' stations'; what.append(t); }
+        const amt = document.createElement('span'); amt.className = 'amt'; amt.textContent = i && i.ok ? money(i.sales) : '';
+        const x = document.createElement('button'); x.className = 'x'; x.type = 'button'; x.textContent = '×';
+        x.setAttribute('aria-label', 'Remove ' + f.name);
+        x.onclick = () => { state[which] = state[which].filter((g) => g !== f); renderLists(); updateBuild(); };
+        const fn = document.createElement('span'); fn.className = 'fn'; fn.textContent = f.name;
+        li.append(what, amt, x, fn);
+        if (i && !i.ok) { const er = document.createElement('span'); er.className = 'err'; er.textContent = i.errors.join(' '); li.append(er); }
+        return li;
+      }));
+    }
+  }
+
+  function updateBuild() {
+    const good = state.cur.filter((f) => f.info && f.info.ok);
+    $('build').disabled = !state.py || !good.length;
+    if (!state.cur.length) $('status').textContent = 'Add at least one export to start.';
+    else if (!state.py) $('status').textContent = 'Files added. The engine is still loading.';
+    else if (!good.length) $('status').textContent = 'None of these files can be used. See the notes on each file.';
+    else {
+      const shifts = new Set(good.filter((f) => f.info.kind === 'daily').map((f) => f.info.range)).size;
+      const h = good.filter((f) => f.info.kind !== 'daily').length;
+      const parts = []; if (shifts) parts.push(shifts + ' shift report' + (shifts > 1 ? 's' : '')); if (h) parts.push(h + ' Harvest weekly');
+      $('status').textContent = 'Ready to build ' + parts.join(' and ') + '.';
+    }
+  }
+
+  function chg(cur, prev) {
+    if (!prev) return null;
+    const p = cur / prev - 1;
+    return { txt: (p >= 0 ? '▲ ' : '▼ ') + Math.abs(p * 100).toFixed(1) + '%', cls: p >= 0 ? 'up' : 'down' };
+  }
+
+  async function save(name, bytes, note) {
+    try {
+      if (downloads) {
+        await downloads.save({ filename: name, data: new Blob([bytes]) });
+        note.textContent = 'Saved'; note.hidden = false;
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' })); a.download = name;
+        document.body.append(a); a.click(); a.remove();
+      }
+    } catch (e) {
+      if (e && e.code === 'declined') return;
+      note.textContent = e && e.code === 'rate_limited' ? 'Another download is waiting for your answer.' : 'Download is not available here.';
+      note.hidden = false;
+    }
+  }
+
+  function renderResults(list) {
+    $('results').hidden = false;
+    state.reports = list.filter((r) => r.ok);
+    $('saveAll').hidden = state.reports.length < 2;
+    $('cards').replaceChildren(...list.map((r) => {
+      const c = document.createElement('article'); c.className = 'card' + (r.ok ? '' : ' fail');
+      const head = document.createElement('div');
+      const t = document.createElement('div'); t.className = 't'; t.textContent = r.ok ? r.title : 'Not built';
+      const fnm = document.createElement('div'); fnm.className = 'fname'; fnm.textContent = r.name;
+      head.append(t, fnm); c.append(head);
+      if (!r.ok) { const pre = document.createElement('pre'); pre.textContent = r.error; c.append(pre); return c; }
+      const right = document.createElement('div'); right.style.cssText = 'display:grid;justify-items:end;gap:4px';
+      const b = document.createElement('button'); b.className = 'primary'; b.type = 'button'; b.textContent = 'Download';
+      const note = document.createElement('span'); note.className = 'saved'; note.hidden = true;
+      b.onclick = () => save(r.name, state.py.FS.readFile(r.file), note);
+      right.append(b, note); c.append(right);
+      const figs = document.createElement('div'); figs.className = 'figs';
+      const add = (lab, val, cls) => { const f = document.createElement('div'); f.className = 'fig';
+        const s = document.createElement('span'); s.textContent = lab; const v = document.createElement('b'); v.textContent = val; if (cls) v.className = cls; f.append(s, v); figs.append(f); };
+      add('Item sales', money(r.sales)); add('Grand total', money(r.grand));
+      if (r.units != null) add('Units', r.units.toLocaleString('en-US'));
+      if (r.compare) { const d = chg(r.sales, r.compare.sales); add('vs ' + r.compare.day, d.txt, 'chg ' + d.cls); }
+      else if (r.kind === 'daily') add('Comparison', 'none added');
+      if (r.combined > 1) add('Exports merged', String(r.combined));
+      c.append(figs);
+      if (r.notes && r.notes.length) { const ul = document.createElement('ul'); ul.className = 'notes';
+        r.notes.forEach((n) => { const li = document.createElement('li'); li.textContent = n; ul.append(li); }); c.append(ul); }
+      return c;
+    }));
+  }
+
+  $('build').onclick = async () => {
+    const btn = $('build'); btn.disabled = true; $('status').textContent = 'Building…';
+    await new Promise((r) => setTimeout(r, 30));
+    try {
+      const py = state.py;
+      py.globals.set('_cur', JSON.stringify(state.cur.filter((f) => f.info).map((f) => f.info)));
+      py.globals.set('_prev', JSON.stringify(state.prev.filter((f) => f.info).map((f) => f.info)));
+      const t0 = performance.now();
+      const res = JSON.parse(py.runPython('engine.run(_cur, _prev)'));
+      renderResults(res);
+      const ok = res.filter((r) => r.ok).length;
+      $('status').textContent = ok + ' of ' + res.length + ' report' + (res.length > 1 ? 's' : '') + ' built in ' + ((performance.now() - t0) / 1000).toFixed(1) + ' s.';
+    } catch (e) {
+      console.error(e); $('status').textContent = 'Something went wrong while building. Check that the files are Item Sales Detail exports.';
+    }
+    btn.disabled = false;
+  };
+
+  $('saveAll').onclick = (ev) => {
+    const py = state.py;
+    py.globals.set('_files', py.toPy(state.reports.map((r) => r.file)));
+    py.runPython("import zipfile,os\nwith zipfile.ZipFile('/tmp/reports.zip','w',zipfile.ZIP_DEFLATED) as z:\n    [z.write(f, os.path.basename(f)) for f in _files]");
+    const days = [...new Set(state.reports.map((r) => (r.name.match(/\d{4}-\d{2}-\d{2}/) || [''])[0]))].filter(Boolean).sort();
+    const note = document.createElement('span');
+    save('Sales_Reports_' + (days[0] || 'batch') + (days.length > 1 ? '_to_' + days[days.length - 1] : '') + '.zip', py.FS.readFile('/tmp/reports.zip'), note);
+  };
+
+  for (const [which, drop, input] of [['cur', 'dropCur', 'inCur'], ['prev', 'dropPrev', 'inPrev']]) {
+    $(input).addEventListener('change', (e) => { addFiles(which, e.target.files); e.target.value = ''; });
+    const d = $(drop);
+    d.addEventListener('dragover', (e) => { e.preventDefault(); d.classList.add('over'); });
+    d.addEventListener('dragleave', () => d.classList.remove('over'));
+    d.addEventListener('drop', (e) => { e.preventDefault(); d.classList.remove('over'); addFiles(which, e.dataTransfer.files); });
+  }
+  boot();
+})();
+</script>
+
+</body></html>
