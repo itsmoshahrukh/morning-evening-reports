@@ -1,6 +1,14 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f2a44">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sales Reports">
+<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}
+.installbtn{font:inherit;font-weight:600;font-size:.82rem;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 12px;cursor:pointer}
+.installbtn:hover{background:rgba(255,255,255,.2)}.installbtn:focus-visible{outline:2px solid #e9c46a;outline-offset:2px}</style>
 </head><body>
 <title>Shift Report Builder</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -803,4 +811,21 @@ table.data td.na { color: var(--muted) }
 })();
 </script>
 
+<script>
+(() => {
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+  let deferred = null;
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); deferred = e;
+    if (standalone || document.getElementById('installBtn')) return;
+    const b = document.createElement('button'); b.id = 'installBtn'; b.className = 'installbtn'; b.type = 'button'; b.textContent = 'Install app';
+    b.onclick = async () => { if (!deferred) return; deferred.prompt(); await deferred.userChoice.catch(() => {}); deferred = null; b.remove(); };
+    const eng = document.getElementById('engine'); eng.parentNode.insertBefore(b, eng);
+  });
+  window.addEventListener('appinstalled', () => { const b = document.getElementById('installBtn'); if (b) b.remove(); });
+})();
+</script>
 </body></html>
