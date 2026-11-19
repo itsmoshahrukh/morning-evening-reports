@@ -27,6 +27,7 @@
   --up: #4cc38a; --down: #f0806b; --warn-bg: #2f2614; --warn-ink: #f0c56d; --err-bg: #34201d;
   --band-ink: #ffffff; --band-sub: #a9b4c4; color-scheme: dark }
 * { box-sizing: border-box }
+[hidden] { display: none !important }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5 }
 .wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
 header.band { background: var(--navy); color: var(--band-ink) }
@@ -103,7 +104,14 @@ footer { color: var(--muted); font-size: .8rem }
   </div>
 </header>
 
-<main class="wrap">
+<nav class="tabs" aria-label="Sections">
+  <div class="wrap tabrow" role="tablist">
+    <button role="tab" id="tabbtn-shift" aria-selected="true" data-tab="shift">Shift reports</button>
+    <button role="tab" id="tabbtn-explore" aria-selected="false" data-tab="explore">Explore sales &amp; costs</button>
+  </div>
+</nav>
+
+<main class="wrap" id="tab-shift">
   <ol class="steps">
     <li><b>Today’s exports.</b> Morning and Evening together is fine; they become separate reports. Add a station-only export (like Yum Bakery) and it’s merged into its shift.</li>
     <li><b>Comparison exports</b> (optional). The previous trading day, or the same day last week. Each shift is matched to its shift.</li>
@@ -145,6 +153,456 @@ footer { color: var(--muted); font-size: .8rem }
 
   <footer>Every report is checked before it’s built: item totals must match the register’s category totals and grand total, or the file is refused with the reason.</footer>
 </main>
+<style>
+.tabs { background: var(--navy); border-top: 1px solid rgba(255,255,255,.08) }
+.tabrow { display: flex; gap: 4px; overflow-x: auto }
+.tabrow button { font: inherit; font-weight: 600; font-size: .92rem; color: var(--band-sub); background: none; border: 0; padding: 10px 14px 11px; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap }
+.tabrow button[aria-selected="true"] { color: #fff; border-bottom-color: var(--gold) }
+.tabrow button:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px }
+.ex-load { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px }
+@media (max-width: 760px) { .ex-load { grid-template-columns: 1fr } }
+.ex-body { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 18px; align-items: start }
+@media (max-width: 900px) { .ex-body { grid-template-columns: 1fr } }
+.side { display: grid; gap: 14px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 10px) }
+@media (max-width: 900px) { .side { position: static } }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; min-width: 0 }
+.box h3 { margin: 0; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; align-items: baseline }
+.box h3 small { text-transform: none; letter-spacing: 0; font-weight: 500 }
+.linkbtns { display: flex; gap: 10px; font-size: .8rem }
+.linkbtns button { font: inherit; background: none; border: 0; color: var(--teal); cursor: pointer; padding: 0; font-weight: 600 }
+.linkbtns button:focus-visible { outline: 2px solid var(--teal) }
+input.text, select.text { font: inherit; font-size: .9rem; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--ink) }
+input.text:focus, select.text:focus { outline: 2px solid var(--teal); outline-offset: 0; border-color: transparent }
+.checks { max-height: 290px; overflow-y: auto; display: grid; gap: 2px; margin: 0 -4px; padding: 0 4px }
+.chk { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; font-size: .86rem; padding: 4px 6px; border-radius: 6px; cursor: pointer }
+.chk:hover { background: var(--teal-soft) }
+.chk input { accent-color: var(--teal); margin: 0 }
+.chk .v { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-size: .78rem; color: var(--muted) }
+.chk .warn { color: var(--warn-ink); font-size: .72rem; margin-left: 4px }
+.seg { display: flex; flex-wrap: wrap; gap: 6px }
+.seg button { font: inherit; font-size: .82rem; font-weight: 600; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer }
+.seg button[aria-pressed="true"] { background: var(--teal); border-color: var(--teal); color: #fff }
+.seg button:disabled { opacity: .4; cursor: not-allowed }
+.seg button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px }
+.searchbar { position: relative }
+.searchbar input { font: inherit; font-size: 1rem; width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink) }
+.searchbar input:focus { outline: 2px solid var(--teal); border-color: transparent }
+.searchbar svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; stroke: var(--muted); fill: none; stroke-width: 2 }
+.main { display: grid; gap: 14px; min-width: 0 }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--teal); border-radius: 8px; padding: 10px 12px; min-width: 0 }
+.kpi span { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted) }
+.kpi b { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-size: 1.15rem; font-weight: 600; overflow-wrap: anywhere }
+.kpi.cost { border-top-color: var(--gold) }
+.kpi.off b { color: var(--muted); font-family: var(--f-body); font-size: .82rem; font-weight: 500 }
+.chartbox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0 }
+.chartbox h3 { margin: 0 0 8px; font-size: .95rem }
+.chartbox svg { width: 100%; height: auto; display: block }
+.tablebox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; overflow: hidden }
+.tablebox .head { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line) }
+.tablebox .head h3 { margin: 0; font-size: .95rem }
+.tscroll { overflow-x: auto; max-height: 560px; overflow-y: auto }
+table.data { width: 100%; border-collapse: collapse; font-size: .84rem }
+table.data th { position: sticky; top: 0; background: var(--panel); text-align: right; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); cursor: pointer; white-space: nowrap; user-select: none }
+table.data th:first-child, table.data td:first-child { text-align: left }
+table.data th[aria-sort] { color: var(--ink) }
+table.data th:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px }
+table.data td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: right; font-family: var(--f-num); font-variant-numeric: tabular-nums; white-space: nowrap }
+table.data td:first-child { font-family: var(--f-body); font-weight: 600; white-space: normal; min-width: 160px }
+table.data td .subt { display: block; font-weight: 400; font-size: .74rem; color: var(--muted) }
+table.data tr.total td { font-weight: 700; background: var(--teal-soft) }
+table.data td.na { color: var(--muted) }
+.more { padding: 10px 14px; font-size: .82rem; color: var(--muted); display: flex; gap: 10px; align-items: center }
+.flags { display: grid; gap: 8px }
+.flag { border: 1px solid var(--line); border-left: 4px solid var(--muted); border-radius: 8px; padding: 9px 12px; background: var(--panel); font-size: .86rem }
+.flag.error { border-left-color: var(--down) } .flag.warning { border-left-color: var(--gold) }
+.flag summary { cursor: pointer; display: flex; gap: 10px; align-items: baseline; list-style: none }
+.flag summary::-webkit-details-marker { display: none }
+.flag summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px }
+.lvl { font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; white-space: nowrap }
+.lvl.error { background: var(--err-bg); color: var(--down) } .lvl.warning { background: var(--warn-bg); color: var(--warn-ink) } .lvl.info { background: var(--teal-soft); color: var(--teal) }
+.flag ul { margin: 8px 0 2px; padding-left: 18px; color: var(--muted); font-size: .8rem; display: grid; gap: 2px; max-height: 220px; overflow-y: auto }
+.badges { display: flex; gap: 6px; flex-wrap: wrap }
+.mapgrid { display: grid; gap: 6px; max-height: 300px; overflow-y: auto }
+.maprow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: center; font-size: .84rem }
+.maprow .cat { overflow-wrap: anywhere } .maprow .cat small { display: block; color: var(--muted); font-size: .74rem }
+.maprow.guess .cat::after { content: "check"; margin-left: 6px; font-size: .66rem; font-weight: 700; text-transform: uppercase; color: var(--warn-ink); background: var(--warn-bg); padding: 0 6px; border-radius: 999px }
+.colpick { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px }
+.colpick label { display: grid; gap: 4px; font-size: .78rem; color: var(--muted) }
+.empty { text-align: center; color: var(--muted); padding: 30px 14px; font-size: .9rem }
+.sample-note { font-size: .8rem; color: var(--warn-ink); background: var(--warn-bg); border-radius: 7px; padding: 6px 10px }
+</style>
+
+<main class="wrap" id="tab-explore" hidden>
+  <section class="ex-load">
+    <div class="tray">
+      <h2>Sales exports <small>any number of days, shifts or locations · .xls or .xlsx</small></h2>
+      <label class="drop" id="exDropSales" for="exInSales">
+        <input type="file" id="exInSales" accept=".xls,.xlsx" multiple>
+        <span><strong>Choose files</strong> or drop them here</span>
+      </label>
+      <ul class="files" id="exListSales"></ul>
+    </div>
+    <div class="tray">
+      <h2>Item costs <small>optional · .xlsx, .xls or .csv</small></h2>
+      <label class="drop" id="exDropCost" for="exInCost">
+        <input type="file" id="exInCost" accept=".xls,.xlsx,.csv">
+        <span><strong>Choose a cost list</strong> or drop it here</span>
+      </label>
+      <ul class="files" id="exListCost"></ul>
+      <p class="hint">Needs an item number or item name column and a cost column. Columns are found automatically, and you can change them.</p>
+      <div id="exColPick" hidden></div>
+    </div>
+  </section>
+
+  <div class="searchbar">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+    <input id="exSearch" type="search" placeholder="Search an item by name or item number…" aria-label="Search items" disabled>
+  </div>
+
+  <section class="ex-body">
+    <aside class="side">
+      <div class="box">
+        <h3>Days &amp; shifts <span class="linkbtns"><button type="button" data-all="files">All</button><button type="button" data-none="files">None</button></span></h3>
+        <div class="checks" id="exFiles"><p class="hint">Add sales exports to begin.</p></div>
+      </div>
+      <div class="box">
+        <h3>Locations <small id="exLocCount"></small></h3>
+        <input class="text" id="exLocSearch" type="search" placeholder="Find a location…" aria-label="Find a location">
+        <div class="linkbtns"><button type="button" data-all="locs">Select all</button><button type="button" data-none="locs">Clear</button><button type="button" id="exOnlyShown">Only matches</button></div>
+        <div class="checks" id="exLocs"></div>
+      </div>
+      <div class="box">
+        <h3>Show</h3>
+        <div class="seg" id="exMetric" role="group" aria-label="Measure"></div>
+        <h3>Group by</h3>
+        <div class="seg" id="exGroup" role="group" aria-label="Group by"></div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="kpis" id="exKpis"></div>
+      <div class="chartbox"><h3 id="exChartTitle">Top 15</h3><div id="exChart"><div class="empty">Your chart appears here once sales exports are added.</div></div></div>
+      <div class="tablebox">
+        <div class="head">
+          <h3 id="exTableTitle">Breakdown</h3>
+          <div class="actions"><span class="saved" id="exSaved" hidden></span><button class="primary" id="exExport" type="button" disabled>Download this view (.xlsx)</button></div>
+        </div>
+        <div class="tscroll"><table class="data" id="exTable"></table></div>
+        <div class="more" id="exMore" hidden></div>
+      </div>
+
+      <div class="box">
+        <h3>Data checks <span class="badges" id="exBadges"></span></h3>
+        <div class="flags" id="exFlags"><p class="hint">Every file is reconciled against the register totals when it’s added. Anything that doesn’t tie out shows here.</p></div>
+      </div>
+      <div class="box">
+        <h3>Location names <small>which sales categories belong to which location</small></h3>
+        <p class="hint">New locations are grouped by the first word of their category. Rename any of them here. Your names are remembered in this browser.</p>
+        <div class="mapgrid" id="exMap"></div>
+        <datalist id="exLocNames"></datalist>
+        <div class="actions"><button class="ghost" id="exMapApply" type="button" disabled>Apply names</button><button class="ghost" id="exMapReset" type="button">Reset to default</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const money = (v) => (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const money0 = (v) => (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString('en-US', { maximumFractionDigits: 0 });
+  const num = (v) => Math.round(v).toLocaleString('en-US');
+  const pct = (v) => (v * 100).toFixed(1) + '%';
+  const METRICS = [['sales', 'Sales'], ['units', 'Units'], ['avg', 'Avg price'], ['addon', 'Add-on sales'], ['cost', 'Cost'], ['profit', 'Gross profit'], ['margin', 'Margin']];
+  const GROUPS = [['location', 'Location'], ['item', 'Item'], ['category', 'Category'], ['group', 'Menu group'], ['day', 'Day & shift']];
+  const COSTM = new Set(['cost', 'profit', 'margin']);
+  const S = { sales: [], cost: null, costOverride: null, data: null, fids: new Set(), locs: new Set(), metric: 'sales', group: 'location',
+              q: '', sort: null, sortDir: -1, showAll: false, seq: 0, mapping: {} };
+  try { S.mapping = JSON.parse(localStorage.getItem('sr_locmap') || '{}') || {}; } catch (e) { S.mapping = {}; }
+  let E = null;
+  document.addEventListener('engine-ready', () => { E = window.__engine; $('exSearch').disabled = false; if (S.sales.length) reload(); });
+
+  // ---------- tabs
+  function showTab(t) {
+    for (const b of document.querySelectorAll('[data-tab]')) b.setAttribute('aria-selected', String(b.dataset.tab === t));
+    $('tab-shift').hidden = t !== 'shift'; $('tab-explore').hidden = t !== 'explore';
+    try { if ((location.hash.slice(1) || 'shift') !== t) history.replaceState(null, '', t === 'shift' ? location.pathname + location.search : '#explore'); } catch (e) {}
+  }
+  for (const b of document.querySelectorAll('[data-tab]')) b.onclick = () => showTab(b.dataset.tab);
+  window.addEventListener('hashchange', () => showTab(location.hash === '#explore' ? 'explore' : 'shift'));
+  if (location.hash === '#explore') showTab('explore');
+
+  // ---------- uploads
+  const toFS = async (f, tag) => {
+    const ext = (f.name.match(/\.(xlsx|xls|csv)$/i) || ['', 'xls'])[1].toLowerCase();
+    return { id: tag + (S.seq++), name: f.name, path: '/tmp/ex/' + tag + S.seq + '.' + ext, bytes: new Uint8Array(await f.arrayBuffer()) };
+  };
+  async function addSales(list) {
+    const ok = [...list].filter((f) => /\.xlsx?$/i.test(f.name));
+    for (const f of ok) S.sales.push(await toFS(f, 's'));
+    renderUploads(); if (E) reload();
+  }
+  async function addCost(list) {
+    const f = [...list].find((x) => /\.(xlsx|xls|csv)$/i.test(x.name)); if (!f) return;
+    S.cost = await toFS(f, 'c'); S.costOverride = null; renderUploads(); if (E && S.sales.length) reload();
+  }
+  function renderUploads() {
+    const li = (f, rm) => { const el = document.createElement('li'); el.className = 'file';
+      const w = document.createElement('span'); w.className = 'what'; w.textContent = f.label || f.name;
+      const a = document.createElement('span'); a.className = 'amt'; a.textContent = f.amt || '';
+      const x = document.createElement('button'); x.className = 'x'; x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Remove ' + f.name); x.onclick = rm;
+      const fn = document.createElement('span'); fn.className = 'fn'; fn.textContent = f.label ? f.name : '';
+      el.append(w, a, x, fn); return el; };
+    const byName = new Map((S.data?.files || []).map((f) => [f.name, f]));
+    $('exListSales').replaceChildren(...S.sales.map((f) => { const i = byName.get(f.name);
+      return li({ name: f.name, label: i ? i.label : '', amt: i ? money(i.sales) : '' }, () => { S.sales = S.sales.filter((g) => g !== f); renderUploads(); reload(); }); }));
+    $('exListCost').replaceChildren(...(S.cost ? [li({ name: S.cost.name, label: S.data?.cost?.ok ? (S.data.cost.entries + ' items with a cost') : '', amt: '' },
+      () => { S.cost = null; S.costOverride = null; $('exColPick').hidden = true; renderUploads(); reload(); })] : []));
+  }
+  function wire(drop, input, fn) {
+    $(input).addEventListener('change', (e) => { fn(e.target.files); e.target.value = ''; });
+    const d = $(drop);
+    d.addEventListener('dragover', (e) => { e.preventDefault(); d.classList.add('over'); });
+    d.addEventListener('dragleave', () => d.classList.remove('over'));
+    d.addEventListener('drop', (e) => { e.preventDefault(); d.classList.remove('over'); fn(e.dataTransfer.files); });
+  }
+  wire('exDropSales', 'exInSales', addSales); wire('exDropCost', 'exInCost', addCost);
+
+  // ---------- load through Python
+  function reload() {
+    if (!E) return;
+    if (!S.sales.length) { S.data = null; renderAll(); return; }
+    const py = E.py; py.FS.mkdirTree('/tmp/ex');
+    for (const f of S.sales) py.FS.writeFile(f.path, f.bytes);
+    if (S.cost) py.FS.writeFile(S.cost.path, S.cost.bytes);
+    py.globals.set('_ex_sales', JSON.stringify(S.sales.map((f) => ({ path: f.path, name: f.name }))));
+    py.globals.set('_ex_cost', S.cost ? S.cost.path : null);
+    py.globals.set('_ex_over', S.costOverride ? JSON.stringify(S.costOverride) : null);
+    py.globals.set('_ex_map', JSON.stringify(S.mapping));
+    const prevF = S.data ? new Set(S.data.files.map((f) => f.name)) : null;
+    const prevL = S.data ? new Set(S.data.locations.map((l) => l.name)) : null;
+    try {
+      S.data = JSON.parse(py.runPython('explore.load(_ex_sales, _ex_cost, _ex_over, _ex_map)'));
+    } catch (e) { console.error(e); S.data = null; $('exFlags').textContent = 'These files could not be read. Check that they are Item Sales Detail exports.'; return; }
+    // keep the viewer's choices where they still apply; new files and locations start selected
+    const fidsByName = new Map(S.data.files.map((f) => [f.name, f.id]));
+    const keepF = new Set([...S.fids].map((id) => S.lastFiles?.[id]).filter(Boolean));
+    S.fids = new Set(S.data.files.filter((f) => !prevF || !prevF.has(f.name) || keepF.has(f.name)).map((f) => f.id));
+    S.lastFiles = Object.fromEntries(S.data.files.map((f) => [f.id, f.name]));
+    const names = S.data.locations.map((l) => l.name);
+    S.locs = new Set(names.filter((n) => !prevL || !prevL.has(n) || S.locs.has(n)));
+    if (!S.data.cost?.ok && COSTM.has(S.metric)) S.metric = 'sales';
+    renderUploads(); renderAll();
+  }
+
+  // ---------- aggregation (mirrors explore.py export exactly)
+  function rowsInView() {
+    if (!S.data) return [];
+    const q = S.q.trim().toLowerCase();
+    return S.data.rows.filter((r) => S.fids.has(r[0]) && S.locs.has(r[1]) && (!q || r[5].toLowerCase().includes(q) || String(r[4]).toLowerCase().includes(q)));
+  }
+  const labelOf = (fid) => S.data.files.find((f) => f.id === fid)?.label || '';
+  function keyOf(r) { return { location: r[1], item: r[5], category: r[2], group: r[3] || '(none)', day: labelOf(r[0]) }[S.group]; }
+  function agg(rows) {
+    const t = { sales: 0, units: 0, addon: 0, cost: 0, profit: 0, costed: 0, n: 0 };
+    for (const r of rows) {
+      t.sales += r[7]; t.units += r[6]; t.addon += r[8]; t.n++;
+      if (r[9] !== null && r[9] !== undefined) { const c = r[6] * r[9] + (r[10] || 0); t.cost += c; t.profit += r[7] - c; t.costed += r[7]; }
+    }
+    t.avg = t.units ? t.sales / t.units : 0; t.margin = t.costed ? t.profit / t.costed : null; t.coverage = t.sales ? t.costed / t.sales : 0;
+    return t;
+  }
+  function groups(rows) {
+    const m = new Map();
+    for (const r of rows) { const k = keyOf(r); if (!m.has(k)) m.set(k, { key: k, rows: [], locs: new Set(), nos: new Set() }); const g = m.get(k); g.rows.push(r); g.locs.add(r[1]); if (r[4]) g.nos.add(r[4]); }
+    return [...m.values()].map((g) => Object.assign(g, agg(g.rows)));
+  }
+  const mv = (g, m) => (m === 'margin' ? (g.margin ?? -Infinity) : (m === 'cost' || m === 'profit') && !g.costed ? -Infinity : g[m]);
+  // descending by default; groups with no value (no cost) always go last
+  function cmp(a, b, m) {
+    const va = mv(a, m), vb = mv(b, m);
+    if (va === vb) return 0; if (va === -Infinity) return 1; if (vb === -Infinity) return -1;
+    return S.sortDir < 0 ? vb - va : va - vb;
+  }
+
+  // ---------- render
+  function renderAll() { renderFilters(); renderView(); renderFlags(); renderMap(); renderColPick(); }
+  function renderFilters() {
+    const d = S.data;
+    $('exFiles').replaceChildren(...(d ? [...d.files].sort((a, b) => a.sort.localeCompare(b.sort)).map((f) => chk(f.label, money0(f.sales), S.fids.has(f.id), (on) => { on ? S.fids.add(f.id) : S.fids.delete(f.id); renderView(); }, !f.reconciled ? 'check totals' : ''))
+      : [Object.assign(document.createElement('p'), { className: 'hint', textContent: 'Add sales exports to begin.' })]));
+    renderLocs();
+    const hasCost = !!d?.cost?.ok;
+    $('exMetric').replaceChildren(...METRICS.map(([k, lab]) => seg(lab, S.metric === k, () => { S.metric = k; S.sort = null; renderFilters(); renderView(); }, COSTM.has(k) && !hasCost, COSTM.has(k) && !hasCost ? 'Add a cost list to use this' : '')));
+    $('exGroup').replaceChildren(...GROUPS.map(([k, lab]) => seg(lab, S.group === k, () => { S.group = k; S.sort = null; S.showAll = false; renderFilters(); renderView(); })));
+  }
+  function renderLocs() {
+    const d = S.data; const f = $('exLocSearch').value.trim().toLowerCase();
+    const list = d ? d.locations.filter((l) => !f || l.name.toLowerCase().includes(f) || l.cats.some((c) => c.toLowerCase().includes(f))) : [];
+    $('exLocs').replaceChildren(...list.map((l) => chk(l.name, money0(l.sales), S.locs.has(l.name), (on) => { on ? S.locs.add(l.name) : S.locs.delete(l.name); $('exLocCount').textContent = countTxt(); renderView(); }, l.guessed ? 'check name' : '')));
+    $('exLocCount').textContent = d ? countTxt() : '';
+  }
+  const countTxt = () => `${S.locs.size} of ${S.data.locations.length} selected`;
+  function chk(label, val, on, fn, warn) {
+    const l = document.createElement('label'); l.className = 'chk';
+    const i = document.createElement('input'); i.type = 'checkbox'; i.checked = on; i.onchange = () => fn(i.checked);
+    const t = document.createElement('span'); t.textContent = label;
+    if (warn) { const w = document.createElement('span'); w.className = 'warn'; w.textContent = warn; t.append(w); }
+    const v = document.createElement('span'); v.className = 'v'; v.textContent = val;
+    l.append(i, t, v); return l;
+  }
+  function seg(label, on, fn, disabled, title) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.setAttribute('aria-pressed', String(on)); b.disabled = !!disabled; if (title) b.title = title; b.onclick = fn; return b;
+  }
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-all],[data-none]'); if (!t || !S.data) return;
+    const all = t.hasAttribute('data-all'); const which = t.dataset.all || t.dataset.none;
+    if (which === 'files') S.fids = new Set(all ? S.data.files.map((f) => f.id) : []);
+    else { const f = $('exLocSearch').value.trim().toLowerCase(); const names = S.data.locations.filter((l) => !f || l.name.toLowerCase().includes(f) || l.cats.some((c) => c.toLowerCase().includes(f))).map((l) => l.name);
+      names.forEach((n) => all ? S.locs.add(n) : S.locs.delete(n)); }
+    renderFilters(); renderView();
+  });
+  $('exOnlyShown').onclick = () => { if (!S.data) return; const f = $('exLocSearch').value.trim().toLowerCase();
+    S.locs = new Set(S.data.locations.filter((l) => !f || l.name.toLowerCase().includes(f) || l.cats.some((c) => c.toLowerCase().includes(f))).map((l) => l.name)); renderFilters(); renderView(); };
+  $('exLocSearch').addEventListener('input', renderLocs);
+  let qt; $('exSearch').addEventListener('input', (e) => { clearTimeout(qt); qt = setTimeout(() => { S.q = e.target.value; S.showAll = false; if (S.q && S.group !== 'item') { S.group = 'item'; renderFilters(); } renderView(); }, 120); });
+
+  function renderView() {
+    const rows = rowsInView(); const hasCost = !!S.data?.cost?.ok; const t = agg(rows);
+    const k = (lab, val, cls) => { const d = document.createElement('div'); d.className = 'kpi' + (cls ? ' ' + cls : '');
+      const s = document.createElement('span'); s.textContent = lab; const b = document.createElement('b'); b.textContent = val; d.append(s, b); return d; };
+    const cards = [k('Sales', money(t.sales)), k('Units sold', num(t.units)), k('Avg price', money(t.avg)), k('Add-on sales', money(t.addon))];
+    if (hasCost) cards.push(k('Cost', money(t.cost), 'cost'), k('Gross profit', money(t.profit), 'cost'), k('Margin', t.margin === null ? '–' : pct(t.margin), 'cost'), k('Sales with a cost', pct(t.coverage), 'cost'));
+    else cards.push(k('Cost & profit', 'Add a cost list to see these', 'cost off'));
+    $('exKpis').replaceChildren(...cards);
+    $('exExport').disabled = !rows.length;
+    const gl = GROUPS.find((g) => g[0] === S.group)[1]; const ml = METRICS.find((m) => m[0] === S.metric)[1];
+    if (!S.data) { $('exChart').innerHTML = '<div class="empty">Your chart appears here once sales exports are added.</div>'; $('exTable').replaceChildren(); $('exTableTitle').textContent = 'Breakdown'; $('exMore').hidden = true; return; }
+    if (!rows.length) { $('exChart').innerHTML = '<div class="empty">Nothing matches. Check the days, locations or search.</div>'; $('exTable').replaceChildren(); $('exMore').hidden = true; $('exTableTitle').textContent = 'No matches'; return; }
+    let gs = groups(rows);
+    const sortKey = S.sort || S.metric;
+    if (S.group === 'day' && !S.sort) gs.sort((a, b) => (S.data.files.find((f) => f.label === a.key)?.sort || '').localeCompare(S.data.files.find((f) => f.label === b.key)?.sort || ''));
+    else if (sortKey === 'key') gs.sort((a, b) => (S.sortDir < 0 ? 1 : -1) * a.key.localeCompare(b.key));
+    else gs.sort((a, b) => cmp(a, b, sortKey) || a.key.localeCompare(b.key));
+    // chart: top 15 by the chosen measure
+    const top = [...gs].filter((g) => mv(g, S.metric) !== -Infinity).sort((a, b) => mv(b, S.metric) - mv(a, S.metric)).slice(0, 15);
+    $('exChartTitle').textContent = `${gs.length > 15 ? 'Top 15 ' : ''}${gl === 'Day & shift' ? 'Days & shifts' : gl + 's'} by ${ml.toLowerCase()}`;
+    drawChart(top, S.metric);
+    // table
+    $('exTableTitle').textContent = `${gs.length.toLocaleString()} ${gl === 'Day & shift' ? 'day/shift' : gl.toLowerCase()}${gs.length === 1 ? '' : 's'}` + (S.q ? ` matching “${S.q.trim()}”` : '');
+    const cols = [['key', gl], ['sales', 'Sales'], ['units', 'Units'], ['avg', 'Avg price'], ['addon', 'Add-ons']].concat(hasCost ? [['cost', 'Cost'], ['profit', 'Gross profit'], ['margin', 'Margin']] : []).concat([['share', 'Share']]);
+    const thead = document.createElement('thead'); const hr = document.createElement('tr');
+    for (const [c, lab] of cols) { const th = document.createElement('th'); th.textContent = lab; th.tabIndex = 0;
+      if ((S.sort || S.metric) === c && c !== 'share') th.setAttribute('aria-sort', S.sortDir < 0 ? 'descending' : 'ascending');
+      const go = () => { if (c === 'share') { S.sort = 'sales'; } else if ((S.sort || S.metric) === c) S.sortDir *= -1; else { S.sort = c; S.sortDir = c === 'key' ? 1 : -1; } renderView(); };
+      th.onclick = go; th.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; hr.append(th); }
+    thead.append(hr);
+    const tb = document.createElement('tbody'); const limit = S.showAll ? gs.length : 200;
+    const fmt = { sales: money, units: num, avg: money, addon: money, cost: money, profit: money };
+    const row = (g, isTot) => { const tr = document.createElement('tr'); if (isTot) tr.className = 'total';
+      for (const [c] of cols) { const td = document.createElement('td');
+        if (c === 'key') { td.textContent = isTot ? 'Total' : g.key;
+          if (!isTot && S.group === 'item') { const s = document.createElement('span'); s.className = 'subt'; s.textContent = [...g.locs].join(', ') + (g.nos.size ? ' · #' + [...g.nos].join(', #') : ''); td.append(s); } }
+        else if (c === 'margin') { if (g.margin === null) { td.textContent = '–'; td.className = 'na'; } else td.textContent = pct(g.margin); }
+        else if (c === 'share') td.textContent = pct(t.sales ? g.sales / t.sales : 0);
+        else if ((c === 'cost' || c === 'profit') && !g.costed) { td.textContent = '–'; td.className = 'na'; }
+        else td.textContent = fmt[c](g[c]);
+        tr.append(td); }
+      return tr; };
+    gs.slice(0, limit).forEach((g) => tb.append(row(g)));
+    tb.append(row(t, true));
+    $('exTable').replaceChildren(thead, tb);
+    if (gs.length > limit) { $('exMore').hidden = false; $('exMore').replaceChildren(document.createTextNode(`Showing 200 of ${gs.length.toLocaleString()}. The download includes all of them.`));
+      const b = document.createElement('button'); b.className = 'ghost'; b.type = 'button'; b.textContent = 'Show all'; b.onclick = () => { S.showAll = true; renderView(); }; $('exMore').append(b); }
+    else $('exMore').hidden = true;
+  }
+
+  function drawChart(gs, m) {
+    const fmt = m === 'units' ? num : m === 'margin' ? pct : (m === 'avg' ? money : money0);
+    const vals = gs.map((g) => mv(g, m)); const maxV = Math.max(0, ...vals); const minV = Math.min(0, ...vals);
+    const W = 760, LW = 210, VW = 90, BH = 22, GAP = 8, H = gs.length * (BH + GAP) + 8;
+    const span = (maxV - minV) || 1; const x0 = LW + ((0 - minV) / span) * (W - LW - VW);
+    const sx = (v) => ((v - 0) / span) * (W - LW - VW);
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const trunc = (s) => (s.length > 30 ? s.slice(0, 29) + '…' : s);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bar chart">`;
+    svg += `<line x1="${x0}" x2="${x0}" y1="0" y2="${H - 4}" stroke="var(--line)" />`;
+    gs.forEach((g, i) => { const v = vals[i]; const y = 4 + i * (BH + GAP); const w = Math.abs(sx(v)); const x = v >= 0 ? x0 : x0 - w;
+      svg += `<text x="${LW - 10}" y="${y + BH / 2 + 4}" text-anchor="end" font-size="12" fill="var(--ink)">${esc(trunc(g.key))}</text>`;
+      svg += `<rect x="${x}" y="${y}" width="${Math.max(1, w)}" height="${BH}" rx="3" fill="${v >= 0 ? 'var(--teal)' : 'var(--down)'}"><title>${esc(g.key)}: ${esc(fmt(v))}</title></rect>`;
+      svg += `<text x="${v >= 0 ? x + w + 6 : x0 + 6}" y="${y + BH / 2 + 4}" font-size="11.5" font-family="var(--f-num)" fill="var(--muted)">${esc(fmt(v))}</text>`; });
+    $('exChart').innerHTML = svg + '</svg>';
+  }
+
+  function renderFlags() {
+    const fl = S.data?.flags || [];
+    const cnt = { error: 0, warning: 0, info: 0 }; fl.forEach((f) => cnt[f.level]++);
+    const names = { error: 'fix first', warning: 'check', info: 'FYI' };
+    $('exBadges').replaceChildren(...Object.entries(cnt).filter(([, n]) => n).map(([k, n]) => { const s = document.createElement('span'); s.className = 'lvl ' + k; s.textContent = n + ' ' + names[k]; return s; }));
+    if (!S.data) return;
+    if (!fl.length) { $('exFlags').replaceChildren(Object.assign(document.createElement('p'), { className: 'hint', textContent: 'Every file ties to its register totals, with no duplicates, overlaps or cost problems found.' })); return; }
+    $('exFlags').replaceChildren(...fl.map((f) => { const d = document.createElement('details'); d.className = 'flag ' + f.level;
+      const s = document.createElement('summary'); const l = document.createElement('span'); l.className = 'lvl ' + f.level; l.textContent = names[f.level];
+      const tx = document.createElement('span'); tx.textContent = `${f.area}: ${f.text}`; s.append(l, tx); d.append(s);
+      if (f.items.length) { const ul = document.createElement('ul'); f.items.forEach((it) => ul.append(Object.assign(document.createElement('li'), { textContent: it })));
+        if (f.more) ul.append(Object.assign(document.createElement('li'), { textContent: `…and ${f.more} more (all listed in the download)` })); d.append(ul); }
+      else s.style.cursor = 'default';
+      return d; }));
+  }
+
+  function renderMap() {
+    const d = S.data; if (!d) { $('exMap').replaceChildren(); return; }
+    $('exLocNames').replaceChildren(...[...new Set(d.locations.map((l) => l.name))].map((n) => Object.assign(document.createElement('option'), { value: n })));
+    const cats = [...d.catmap].sort((a, b) => (b.guessed - a.guessed) || a.location.localeCompare(b.location) || a.category.localeCompare(b.category));
+    $('exMap').replaceChildren(...cats.map((c) => { const r = document.createElement('div'); r.className = 'maprow' + (c.guessed ? ' guess' : '');
+      const n = document.createElement('div'); n.className = 'cat'; n.textContent = c.category; const sm = document.createElement('small'); sm.textContent = money0(c.sales); n.append(sm);
+      const i = document.createElement('input'); i.className = 'text'; i.value = c.location; i.setAttribute('list', 'exLocNames'); i.setAttribute('aria-label', 'Location for ' + c.category); i.dataset.cat = c.category;
+      i.addEventListener('input', () => { $('exMapApply').disabled = false; }); r.append(n, i); return r; }));
+    $('exMapApply').disabled = true;
+  }
+  $('exMapApply').onclick = () => {
+    for (const i of $('exMap').querySelectorAll('input[data-cat]')) { const v = i.value.trim(); if (v) S.mapping[i.dataset.cat] = v; }
+    try { localStorage.setItem('sr_locmap', JSON.stringify(S.mapping)); } catch (e) {}
+    reload();
+  };
+  $('exMapReset').onclick = () => { S.mapping = {}; try { localStorage.removeItem('sr_locmap'); } catch (e) {} reload(); };
+
+  function renderColPick() {
+    const c = S.data?.cost; const box = $('exColPick');
+    if (!c) { box.hidden = true; return; }
+    box.hidden = false; box.replaceChildren();
+    const note = document.createElement('p'); note.className = c.ok ? 'hint' : 'sample-note';
+    note.textContent = c.ok ? `Using “${c.headers[c.cols.cost] || 'cost'}” as the cost, matched on ${c.cols.item_no !== undefined ? '“' + c.headers[c.cols.item_no] + '”' : ''}${c.cols.item_no !== undefined && c.cols.name !== undefined ? ' then ' : ''}${c.cols.name !== undefined ? '“' + c.headers[c.cols.name] + '”' : ''}.${c.unused ? ` ${c.unused} cost items weren’t sold in these files.` : ''}` : c.error;
+    box.append(note);
+    const grid = document.createElement('div'); grid.className = 'colpick';
+    const pick = (lab, role) => { const l = document.createElement('label'); l.textContent = lab; const s = document.createElement('select'); s.className = 'text'; s.dataset.role = role;
+      s.append(Object.assign(document.createElement('option'), { value: '', textContent: '— none —' }));
+      c.headers.forEach((h, j) => { if (h) s.append(Object.assign(document.createElement('option'), { value: j, textContent: h })); });
+      s.value = c.cols[role] !== undefined ? c.cols[role] : ''; l.append(s); return l; };
+    grid.append(pick('Item number', 'item_no'), pick('Item name', 'name'), pick('Cost per unit', 'cost'));
+    const b = document.createElement('button'); b.className = 'ghost'; b.type = 'button'; b.textContent = 'Use these columns';
+    b.onclick = () => { const cols = {}; for (const s of grid.querySelectorAll('select')) if (s.value !== '') cols[s.dataset.role] = Number(s.value);
+      if (cols.cost === undefined || (cols.item_no === undefined && cols.name === undefined)) { note.className = 'sample-note'; note.textContent = 'Pick a cost column and at least one of item number or item name.'; return; }
+      S.costOverride = { header_row: c.header_row, cols }; reload(); };
+    box.append(grid, b);
+  }
+
+  $('exExport').onclick = async () => {
+    if (!E || !S.data) return;
+    const allL = S.locs.size === S.data.locations.length;
+    const sel = { fids: [...S.fids], locs: allL ? [] : [...S.locs], search: S.q.trim(), groupby: S.group, metric: S.metric };
+    const note = $('exSaved'); note.hidden = true;
+    try {
+      E.py.globals.set('_ex_sel', JSON.stringify(sel));
+      const r = JSON.parse(E.py.runPython('explore.export(_ex_sel)'));
+      await E.save(r.name, E.py.FS.readFile(r.file), note);
+    } catch (e) { console.error(e); note.textContent = 'This view could not be exported.'; note.hidden = false; }
+  };
+  renderView();
+})();
+</script>
+
 
 <script src="py/pyodide.js"></script>
 <script>
@@ -172,10 +630,12 @@ footer { color: var(--muted); font-size: .8rem }
       const app = (await bin('lib/app.b64.txt')).buffer;
       py.FS.mkdirTree('/home/pyodide/app');
       py.unpackArchive(app, 'zip', { extractDir: '/home/pyodide/app' });
-      py.runPython("import sys; sys.path.insert(0,'/home/pyodide/app'); import engine");
+      py.runPython("import sys; sys.path.insert(0,'/home/pyodide/app'); import engine, explore");
       py.FS.mkdirTree('/tmp/in');
       state.py = py;
       setEngine('ready', 'Ready');
+      window.__engine = { py, save };
+      document.dispatchEvent(new Event('engine-ready'));
       await describeAll();
     } catch (e) {
       console.error(e);
