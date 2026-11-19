@@ -98,7 +98,7 @@ footer { color: var(--muted); font-size: .8rem }
   <div class="wrap">
     <div>
       <h1>Shift Report Builder</h1>
-      <p class="sub">Drop in the Transact “Item Sales Detail” exports and get the Morning, Evening and Harvest weekly reports back as Excel files.</p>
+      <p class="sub">Drop in Transact exports and get the Morning, Evening, Harvest weekly and Sales &amp; Margin reports back as Excel files.</p>
     </div>
     <div class="engine" id="engine" role="status"><span class="dot"></span><span id="engineText">Getting the report engine ready…</span></div>
   </div>
@@ -120,7 +120,7 @@ footer { color: var(--muted); font-size: .8rem }
 
   <section class="trays">
     <div class="tray">
-      <h2>Exports to report on <small>.xls or .xlsx · Blue Wall shifts or Harvest weekly</small></h2>
+      <h2>Exports to report on <small>.xls or .xlsx · Item Sales Detail, Harvest weekly or Item Sales Summary with Cost</small></h2>
       <label class="drop" id="dropCur" for="inCur">
         <input type="file" id="inCur" accept=".xls,.xlsx" multiple>
         <span><strong>Choose files</strong> or drop them here</span>
@@ -236,7 +236,7 @@ table.data td.na { color: var(--muted) }
 <main class="wrap" id="tab-explore" hidden>
   <section class="ex-load">
     <div class="tray">
-      <h2>Sales exports <small>any number of days, shifts or locations · .xls or .xlsx</small></h2>
+      <h2>Sales exports <small>Item Sales Detail or Item Sales Summary with Cost · any number of days or locations</small></h2>
       <label class="drop" id="exDropSales" for="exInSales">
         <input type="file" id="exInSales" accept=".xls,.xlsx" multiple>
         <span><strong>Choose files</strong> or drop them here</span>
@@ -250,7 +250,7 @@ table.data td.na { color: var(--muted) }
         <span><strong>Choose a cost list</strong> or drop it here</span>
       </label>
       <ul class="files" id="exListCost"></ul>
-      <p class="hint">Needs an item number or item name column and a cost column. Columns are found automatically, and you can change them.</p>
+      <p class="hint">Not needed for “Item Sales Summary with Cost” exports, which carry their own costs. A list needs an item number or item name column and a cost column. Columns are found automatically, and you can change them.</p>
       <div id="exColPick" hidden></div>
     </div>
   </section>
@@ -392,7 +392,7 @@ table.data td.na { color: var(--muted) }
     S.lastFiles = Object.fromEntries(S.data.files.map((f) => [f.id, f.name]));
     const names = S.data.locations.map((l) => l.name);
     S.locs = new Set(names.filter((n) => !prevL || !prevL.has(n) || S.locs.has(n)));
-    if (!S.data.cost?.ok && COSTM.has(S.metric)) S.metric = 'sales';
+    if (!S.data.has_cost && COSTM.has(S.metric)) S.metric = 'sales';
     renderUploads(); renderAll();
   }
 
@@ -433,7 +433,7 @@ table.data td.na { color: var(--muted) }
     $('exFiles').replaceChildren(...(d ? [...d.files].sort((a, b) => a.sort.localeCompare(b.sort)).map((f) => chk(f.label, money0(f.sales), S.fids.has(f.id), (on) => { on ? S.fids.add(f.id) : S.fids.delete(f.id); renderView(); }, !f.reconciled ? 'check totals' : ''))
       : [Object.assign(document.createElement('p'), { className: 'hint', textContent: 'Add sales exports to begin.' })]));
     renderLocs();
-    const hasCost = !!d?.cost?.ok;
+    const hasCost = !!d?.has_cost;
     $('exMetric').replaceChildren(...METRICS.map(([k, lab]) => seg(lab, S.metric === k, () => { S.metric = k; S.sort = null; renderFilters(); renderView(); }, COSTM.has(k) && !hasCost, COSTM.has(k) && !hasCost ? 'Add a cost list to use this' : '')));
     $('exGroup').replaceChildren(...GROUPS.map(([k, lab]) => seg(lab, S.group === k, () => { S.group = k; S.sort = null; S.showAll = false; renderFilters(); renderView(); })));
   }
@@ -469,7 +469,7 @@ table.data td.na { color: var(--muted) }
   let qt; $('exSearch').addEventListener('input', (e) => { clearTimeout(qt); qt = setTimeout(() => { S.q = e.target.value; S.showAll = false; if (S.q && S.group !== 'item') { S.group = 'item'; renderFilters(); } renderView(); }, 120); });
 
   function renderView() {
-    const rows = rowsInView(); const hasCost = !!S.data?.cost?.ok; const t = agg(rows);
+    const rows = rowsInView(); const hasCost = !!S.data?.has_cost; const t = agg(rows);
     const k = (lab, val, cls) => { const d = document.createElement('div'); d.className = 'kpi' + (cls ? ' ' + cls : '');
       const s = document.createElement('span'); s.textContent = lab; const b = document.createElement('b'); b.textContent = val; d.append(s, b); return d; };
     const cards = [k('Sales', money(t.sales)), k('Units sold', num(t.units)), k('Avg price', money(t.avg)), k('Add-on sales', money(t.addon))];
@@ -680,6 +680,7 @@ table.data td.na { color: var(--muted) }
         const what = document.createElement('span'); what.className = 'what';
         what.textContent = i ? (i.label || 'Unrecognised export') : 'Reading…';
         if (i && i.kind === 'harvest') { const t = document.createElement('span'); t.className = 'tag h'; t.textContent = 'Harvest weekly'; what.append(t); }
+        else if (i && i.kind === 'margin') { const t = document.createElement('span'); t.className = 'tag h'; t.textContent = 'Sales & margin'; what.append(t); }
         else if (i && i.kind === 'daily') { const t = document.createElement('span'); t.className = 'tag'; t.textContent = i.stations + ' stations'; what.append(t); }
         const amt = document.createElement('span'); amt.className = 'amt'; amt.textContent = i && i.ok ? money(i.sales) : '';
         const x = document.createElement('button'); x.className = 'x'; x.type = 'button'; x.textContent = '×';
@@ -701,8 +702,9 @@ table.data td.na { color: var(--muted) }
     else if (!good.length) $('status').textContent = 'None of these files can be used. See the notes on each file.';
     else {
       const shifts = new Set(good.filter((f) => f.info.kind === 'daily').map((f) => f.info.range)).size;
-      const h = good.filter((f) => f.info.kind !== 'daily').length;
-      const parts = []; if (shifts) parts.push(shifts + ' shift report' + (shifts > 1 ? 's' : '')); if (h) parts.push(h + ' Harvest weekly');
+      const h = good.filter((f) => f.info.kind === 'harvest' || f.info.kind === 'multi').length;
+      const mg = good.filter((f) => f.info.kind === 'margin').length;
+      const parts = []; if (shifts) parts.push(shifts + ' shift report' + (shifts > 1 ? 's' : '')); if (h) parts.push(h + ' Harvest weekly'); if (mg) parts.push(mg + ' sales & margin report' + (mg > 1 ? 's' : ''));
       $('status').textContent = 'Ready to build ' + parts.join(' and ') + '.';
     }
   }
@@ -749,7 +751,9 @@ table.data td.na { color: var(--muted) }
       const figs = document.createElement('div'); figs.className = 'figs';
       const add = (lab, val, cls) => { const f = document.createElement('div'); f.className = 'fig';
         const s = document.createElement('span'); s.textContent = lab; const v = document.createElement('b'); v.textContent = val; if (cls) v.className = cls; f.append(s, v); figs.append(f); };
-      add('Item sales', money(r.sales)); add('Grand total', money(r.grand));
+      add('Item sales', money(r.sales));
+      if (r.kind === 'margin') { add('Item cost', money(r.cost)); add('Gross margin', money(r.margin)); add('Margin %', (r.sales ? (r.margin / r.sales * 100) : 0).toFixed(1) + '%'); }
+      else add('Grand total', money(r.grand));
       if (r.units != null) add('Units', r.units.toLocaleString('en-US'));
       if (r.compare) { const d = chg(r.sales, r.compare.sales); add('vs ' + r.compare.day, d.txt, 'chg ' + d.cls); }
       else if (r.kind === 'daily') add('Comparison', 'none added');

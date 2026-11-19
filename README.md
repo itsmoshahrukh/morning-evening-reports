@@ -1,8 +1,10 @@
 # Shift Report Builder
 
-Builds sales reports from Transact Cloud POS "Item Sales Detail – modifier count detailed" exports (.xls or .xlsx).
+Builds sales reports from Transact Cloud POS exports (.xls or .xlsx):
+"Item Sales Detail – modifier count detailed" and "Item Sales Summary with Cost".
 
-**Shift reports** – Blue Wall Morning / Evening reports and the Harvest weekly report, as Excel files.
+**Shift reports** – Blue Wall Morning / Evening reports, the Harvest weekly report, and a Sales & Margin report
+for any "Item Sales Summary with Cost" export (any location, any date range), as Excel files.
 
 **Explore sales & costs**
 - Add any number of exports (days, shifts, locations) and an optional item cost list (.xlsx, .xls or .csv).
