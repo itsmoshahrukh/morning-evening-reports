@@ -141,6 +141,8 @@ h1, h2, h3 { font-family: var(--f-head); letter-spacing: -0.01em; text-wrap: bal
 .fchip .k.cost { color: var(--warn-ink); background: var(--gold-soft) }
 .fchip.bad { background: var(--err-bg); border-color: transparent }
 .fchip.bad .k { color: var(--down); background: transparent }
+.fchip button.xl { width: auto; height: auto; border-radius: 999px; padding: 1px 8px; font-size: .68rem; font-weight: 700; color: var(--teal); background: var(--teal-soft); text-transform: uppercase; letter-spacing: .04em }
+.fchip button.xl:hover { background: var(--teal); color: #fff }
 .fchip button { border: 0; background: none; color: var(--muted); cursor: pointer; width: 22px; height: 22px; border-radius: 50%; line-height: 1; font-size: 1rem }
 .fchip button:hover { background: var(--line); color: var(--down) }
 .fchip button:focus-visible { outline: 2px solid var(--teal) }
@@ -367,7 +369,7 @@ footer.fine { color: var(--muted); font-size: .8rem }
 
       <div class="card2 hero" id="lvEmpty">
         <label class="dropbig" id="lvDrop" for="lvIn">
-          <input class="sr-file" type="file" id="lvIn" accept=".xls,.xlsx,.csv" multiple>
+          <input class="sr-file" type="file" id="lvIn" accept=".xls,.xlsx,.csv,.pdf" multiple>
           <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 31V9M15 18l9-9 9 9"/><path d="M8 30v8a2 2 0 002 2h28a2 2 0 002-2v-8"/></svg>
           <h2>Drop your exports here</h2>
           <p>Any number of files at once. Each one is checked against its register totals before anything is shown.</p>
@@ -379,7 +381,8 @@ footer.fine { color: var(--muted); font-size: .8rem }
             <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><b>Item Sales Detail</b> for any shift, day or week, with add-ons.</span></li>
             <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><b>Item Sales Summary with Cost</b>, which carries the POS cost and margin.</span></li>
             <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><b>Your own cost list</b> (.xlsx, .xls or .csv), matched by item number or name.</span></li>
-            <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><b>Blue Wall, Harvest, all cafes</b> and any new location. Mix them freely.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><b>PDF exports</b> of the same Transact reports, converted to Excel on the spot.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><b>Blue Wall, Harvest, all cafes, Mullins</b> and any new location or revenue center. Mix them freely.</span></li>
           </ul>
           <label class="toggle"><input type="checkbox" id="lvRemember" checked> Remember each day for forecasting</label>
         </aside>
@@ -395,6 +398,8 @@ footer.fine { color: var(--muted); font-size: .8rem }
               <div class="panel" id="fbLocs" hidden><input class="text" id="fbLocFind" type="search" placeholder="Find a location…" aria-label="Find a location">
                 <div class="linkrow"><button class="link" type="button" data-all="locs">Select all</button><button class="link" type="button" data-none="locs">Clear</button><button class="link" type="button" id="fbOnly">Only matches</button></div>
                 <div class="scroller" id="fbLocsList"></div></div></div>
+            <div class="pop" id="fbRcPop" hidden><button class="chip" type="button" id="fbRcBtn" aria-expanded="false" aria-controls="fbRc"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span id="fbRcTxt">All revenue centers</span></button>
+              <div class="panel" id="fbRc" hidden><div class="linkrow"><button class="link" type="button" data-all="rcs">Select all</button><button class="link" type="button" data-none="rcs">Clear</button></div><div class="scroller" id="fbRcList"></div></div></div>
             <div class="seg" id="fbMetric" role="group" aria-label="Measure"></div>
             <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
               <input id="fbSearch" type="search" placeholder="Search items by name or item #" aria-label="Search items" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="fbSugg">
@@ -418,9 +423,11 @@ footer.fine { color: var(--muted); font-size: .8rem }
 
           <div class="twocol">
             <details class="card2 fold" id="dqFold" open><summary><span>Data checks <span class="badges" id="dqBadges"></span></span></summary><div class="bd"><div class="flags" id="dqFlags"></div></div></details>
-            <details class="card2 fold"><summary>Location names</summary><div class="bd" style="display:grid;gap:10px">
-              <p class="hint">New locations are named from their POS category. Rename any of them here; your names are remembered in this browser.</p>
+            <details class="card2 fold"><summary>Location &amp; revenue center names</summary><div class="bd" style="display:grid;gap:10px">
+              <p class="hint">Locations are named from their POS category and revenue centers from their register names. Rename any of them here; your names are remembered in this browser.</p>
+              <span class="eyebrow">Locations</span>
               <div class="mapgrid" id="mapGrid"></div><datalist id="mapNames"></datalist>
+              <div id="rcMapBox" hidden style="display:grid;gap:8px"><span class="eyebrow">Revenue centers</span><div class="mapgrid" id="rcGrid"></div></div>
               <div class="actions"><button class="btn ghost" id="mapApply" type="button" disabled>Apply names</button><button class="btn ghost" id="mapReset" type="button">Reset</button></div>
               <div id="colPick" hidden></div></div></details>
           </div>
@@ -471,13 +478,13 @@ footer.fine { color: var(--muted); font-size: .8rem }
       </ol>
       <section class="trays">
         <div class="tray">
-          <h2>Exports to report on <small>Item Sales Detail, Harvest weekly or Item Sales Summary with Cost</small></h2>
-          <label class="drop" id="dropCur" for="inCur"><input type="file" id="inCur" accept=".xls,.xlsx" multiple><span><strong>Choose files</strong> or drop them here</span></label>
+          <h2>Exports to report on <small>Excel or PDF · Item Sales Detail, Item Sales Summary, Harvest weekly or with Cost</small></h2>
+          <label class="drop" id="dropCur" for="inCur"><input type="file" id="inCur" accept=".xls,.xlsx,.pdf" multiple><span><strong>Choose files</strong> or drop them here</span></label>
           <ul class="files" id="listCur"></ul>
         </div>
         <div class="tray">
           <h2>Compare with <small>optional</small></h2>
-          <label class="drop" id="dropPrev" for="inPrev"><input type="file" id="inPrev" accept=".xls,.xlsx" multiple><span><strong>Choose files</strong> or drop them here</span></label>
+          <label class="drop" id="dropPrev" for="inPrev"><input type="file" id="inPrev" accept=".xls,.xlsx,.pdf" multiple><span><strong>Choose files</strong> or drop them here</span></label>
           <ul class="files" id="listPrev"></ul>
           <p class="hint">Without these the reports still build; the comparison columns show “–”.</p>
         </div>
@@ -544,6 +551,13 @@ footer.fine { color: var(--muted); font-size: .8rem }
       py.unpackArchive(app, 'zip', { extractDir: '/home/pyodide/app' });
       py.runPython("import sys; sys.path.insert(0,'/home/pyodide/app'); import engine, explore, forecast");
       py.FS.mkdirTree('/tmp/in');
+      window.__ensurePdf = async () => {
+        if (window.__pdfReady) return window.__pdfReady;
+        window.__pdfReady = (async () => {
+          for (const n of ['charset_normalizer', 'pdfminer']) py.unpackArchive((await bin('lib/' + n + '.b64.txt')).buffer, 'wheel');
+        })();
+        return window.__pdfReady;
+      };
       state.py = py;
       setEngine('ready', 'Ready · works offline');
       window.__engine = { py, save };
@@ -556,14 +570,14 @@ footer.fine { color: var(--muted); font-size: .8rem }
   }
 
   function addFiles(which, fileList) {
-    const jobs = [...fileList].filter((f) => /\.xlsx?$/i.test(f.name)).map(async (f) => {
-      const ext = f.name.toLowerCase().endsWith('.xlsx') ? '.xlsx' : '.xls';
+    const jobs = [...fileList].filter((f) => /\.(xlsx?|pdf)$/i.test(f.name)).map(async (f) => {
+      const ext = (f.name.match(/\.(xlsx|xls|pdf)$/i)[0] || '.xls').toLowerCase();
       const id = which + '_' + (state.seq++);
       state[which].push({ id, name: f.name, path: '/tmp/in/' + id + ext, bytes: new Uint8Array(await f.arrayBuffer()), info: null });
     });
     const skipped = [...fileList].length - jobs.length;
     Promise.all(jobs).then(() => {
-      if (skipped) $('status').textContent = skipped + ' file(s) skipped: only .xls and .xlsx exports can be used.';
+      if (skipped) $('status').textContent = skipped + ' file(s) skipped: only .xls, .xlsx and .pdf exports can be used.';
       describeAll();
     });
   }
@@ -575,6 +589,7 @@ footer.fine { color: var(--muted); font-size: .8rem }
       const todo = state[which].filter((f) => !f.info);
       if (!todo.length) continue;
       for (const f of todo) state.py.FS.writeFile(f.path, f.bytes);
+      if (todo.some((f) => f.path.endsWith('.pdf'))) { $('status').textContent = 'Getting the PDF reader ready…'; await window.__ensurePdf(); }
       state.py.globals.set('_paths', state.py.toPy(todo.map((f) => f.path)));
       const res = JSON.parse(state.py.runPython('engine.describe(list(_paths))'));
       res.forEach((r, i) => { todo[i].info = r; });
@@ -732,7 +747,7 @@ footer.fine { color: var(--muted); font-size: .8rem }
   const venueOf = (l) => (l === 'Harvest' || l === 'Harvest Scannables') ? 'Harvest' : BW.has(l) ? 'Blue Wall' : CAFES.has(l) ? 'Cafes' : 'Other';
   const VENUES = ['Blue Wall', 'Cafes', 'Harvest', 'Other'];
   const METRICS = [['sales', 'Sales'], ['units', 'Units'], ['avg', 'Avg price'], ['addon', 'Add-ons'], ['cost', 'Cost'], ['profit', 'Profit'], ['margin', 'Margin']];
-  const GROUPS = [['location', 'Location'], ['item', 'Item'], ['category', 'Category'], ['group', 'Menu group'], ['day', 'Day & shift'], ['venue', 'Venue']];
+  const GROUPS = [['location', 'Location'], ['rc', 'Revenue center'], ['item', 'Item'], ['category', 'Category'], ['group', 'Menu group'], ['day', 'Day & shift'], ['venue', 'Venue']];
   const COSTM = new Set(['cost', 'profit', 'margin']);
   let E = null;
 
@@ -774,6 +789,9 @@ footer.fine { color: var(--muted); font-size: .8rem }
   const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
   let HIST = [];
+  const periodText = (fs) => { const o = [...fs].sort((a, b) => a.sort.localeCompare(b.sort)); const a = o[0].label, b = o.at(-1).label; return a === b ? a : `${a} to ${b}`; };
+  const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+  const recId = (r) => `${r.date}|${r.shift}|${r.loc}${r.rc ? '|' + r.rc : ''}`;
   async function refreshHistory() { HIST = await Store.all(); const days = new Set(HIST.map((r) => r.date)).size; $('navHist').textContent = days; return HIST; }
 
   // ---------------------------------------------------------------- navigation
@@ -790,15 +808,15 @@ footer.fine { color: var(--muted); font-size: .8rem }
 
   // ================================================================ LIVE REPORT
   const S = { files: [], cost: null, bad: [], costOverride: null, data: null, fids: new Set(), locs: new Set(), metric: 'sales', group: 'location',
-              q: '', sort: null, sortDir: -1, showAll: false, seq: 0, mapping: LS.get('sr_locmap', {}), pending: [], lastFiles: {} };
+              q: '', sort: null, sortDir: -1, showAll: false, seq: 0, mapping: LS.get('sr_locmap', {}), rcmap: LS.get('sr_rcmap', {}), rcs: new Set(), pending: [], lastFiles: {} };
   $('lvRemember').checked = LS.get('srs_remember', true);
   $('lvRemember').onchange = (e) => LS.set('srs_remember', e.target.checked);
 
   async function addFiles(list) {
-    const ok = [...list].filter((f) => /\.(xlsx|xls|csv)$/i.test(f.name));
-    if (ok.length < [...list].length) toast('Only .xls, .xlsx and .csv files can be used.');
+    const ok = [...list].filter((f) => /\.(xlsx|xls|csv|pdf)$/i.test(f.name));
+    if (ok.length < [...list].length) toast('Only .xls, .xlsx, .csv and .pdf files can be used.');
     for (const f of ok) {
-      const ext = f.name.match(/\.(xlsx|xls|csv)$/i)[1].toLowerCase();
+      const ext = f.name.match(/\.(xlsx|xls|csv|pdf)$/i)[1].toLowerCase();
       S.pending.push({ id: 'f' + (S.seq++), name: f.name, ext, bytes: new Uint8Array(await f.arrayBuffer()) });
     }
     if (E) await intake();
@@ -809,6 +827,7 @@ footer.fine { color: var(--muted); font-size: .8rem }
     const todo = S.pending.splice(0);
     E.py.FS.mkdirTree('/tmp/lv');
     for (const f of todo) { f.path = '/tmp/lv/' + f.id + '.' + f.ext; E.py.FS.writeFile(f.path, f.bytes); }
+    if (todo.some((f) => f.ext === 'pdf')) await busy('Getting the PDF reader ready (first PDF only)…', () => window.__ensurePdf());
     const cls = JSON.parse(py('explore.classify(_p)', { _p: JSON.stringify(todo.map((f) => ({ path: f.path, name: f.name }))) }));
     cls.forEach((c, i) => { const f = todo[i]; f.kind = c.kind; f.label = c.label; f.detail = c.detail;
       if (c.kind === 'pos') S.files.push(f); else if (c.kind === 'cost_list') { S.cost = f; S.costOverride = null; } else S.bad.push(f); });
@@ -823,14 +842,16 @@ footer.fine { color: var(--muted); font-size: .8rem }
     const keepF = new Set([...S.fids].map((id) => S.lastFiles[id]).filter(Boolean));
     await busy('Reading ' + S.files.length + ' export' + (S.files.length > 1 ? 's' : '') + '…', async () => {
       try {
-        S.data = JSON.parse(py('explore.load(_s, _c, _o, _m)', { _s: JSON.stringify(S.files.map((f) => ({ path: f.path, name: f.name }))),
-          _c: S.cost ? S.cost.path : null, _o: S.costOverride ? JSON.stringify(S.costOverride) : null, _m: JSON.stringify(S.mapping) }));
+        S.data = JSON.parse(py('explore.load(_s, _c, _o, _m, _rc)', { _s: JSON.stringify(S.files.map((f) => ({ path: f.path, name: f.name }))),
+          _c: S.cost ? S.cost.path : null, _o: S.costOverride ? JSON.stringify(S.costOverride) : null, _m: JSON.stringify(S.mapping), _rc: JSON.stringify(S.rcmap) }));
       } catch (e) { console.error(e); S.data = null; toast('These files could not be read.'); }
     });
     if (!S.data) { renderLive(); return; }
     S.fids = new Set(S.data.files.filter((f) => !prevF || !prevF.has(f.name) || keepF.has(f.name)).map((f) => f.id));
     S.lastFiles = Object.fromEntries(S.data.files.map((f) => [f.id, f.name]));
     S.locs = new Set(S.data.locations.map((l) => l.name).filter((n) => !prevL || !prevL.has(n) || S.locs.has(n)));
+    const allRc = [...new Set(S.data.files.map((f) => f.rc))];
+    S.rcs = new Set(allRc.filter((r) => !S.prevRc || !S.prevRc.has(r) || S.rcs.has(r))); S.prevRc = new Set(allRc);
     if (!S.data.has_cost && COSTM.has(S.metric)) S.metric = 'sales';
     if ($('lvRemember').checked) await remember();
     renderLive();
@@ -838,7 +859,7 @@ footer.fine { color: var(--muted); font-size: .8rem }
   async function remember() {
     try {
       const h = JSON.parse(py('explore.history_records()'));
-      const recs = h.records.filter((r) => r.reconciled).map((r) => { const o = Object.assign({}, r); delete o.reconciled; o.id = `${o.date}|${o.shift}|${o.loc}`; return o; });
+      const recs = h.records.filter((r) => r.reconciled).map((r) => { const o = Object.assign({}, r); delete o.reconciled; o.id = recId(o); return o; });
       if (!recs.length) return;
       const { added, updated } = await Store.upsert(recs); await refreshHistory();
       const days = new Set(recs.map((r) => r.date + ' ' + r.shift)).size;
@@ -851,9 +872,10 @@ footer.fine { color: var(--muted); font-size: .8rem }
   function rowsInView(opts = {}) {
     if (!S.data) return [];
     const q = opts.ignoreSearch ? '' : S.q.trim().toLowerCase();
-    return S.data.rows.filter((r) => S.fids.has(r[0]) && S.locs.has(r[1]) && (!q || r[5].toLowerCase().includes(q) || String(r[4]).toLowerCase().includes(q)));
+    const okF = new Set(S.data.files.filter((f) => S.fids.has(f.id) && S.rcs.has(f.rc)).map((f) => f.id));
+    return S.data.rows.filter((r) => okF.has(r[0]) && S.locs.has(r[1]) && (!q || r[5].toLowerCase().includes(q) || String(r[4]).toLowerCase().includes(q)));
   }
-  function keyOf(r, g = S.group) { return { location: r[1], item: r[5], category: r[2], group: r[3] || '(none)', day: fileById(r[0]).label, venue: venueOf(r[1]) }[g]; }
+  function keyOf(r, g = S.group) { return { location: r[1], item: r[5], category: r[2], group: r[3] || '(none)', day: fileById(r[0]).label, venue: venueOf(r[1]), rc: fileById(r[0]).rc }[g]; }
   function agg(rows) {
     const t = { sales: 0, units: 0, addon: 0, cost: 0, profit: 0, costed: 0, n: rows.length };
     for (const r of rows) {
@@ -879,17 +901,21 @@ footer.fine { color: var(--muted); font-size: .8rem }
     $('lvXlsx').disabled = $('lvPdf').disabled = !has;
     if (!has) { $('lvSub').textContent = 'Drop any Transact export to see it live: Blue Wall, Harvest, cafes or any other location, with or without costs.'; return; }
     const fs = S.data.files; const first = [...fs].sort((a, b) => a.sort.localeCompare(b.sort))[0], last = [...fs].sort((a, b) => a.sort.localeCompare(b.sort)).at(-1);
-    $('lvSub').textContent = `${fs.length} export${fs.length > 1 ? 's' : ''} · ${first.label}${fs.length > 1 ? ' to ' + last.label : ''} · ${S.data.locations.length} location${S.data.locations.length > 1 ? 's' : ''}`;
+    const nrc = new Set(fs.map((f) => f.rc)).size;
+    $('lvSub').textContent = `${plural(fs.length, 'export')} · ${periodText(fs)} · ${plural(S.data.locations.length, 'location')}${nrc > 1 ? ' · ' + plural(nrc, 'revenue center') : ''}`;
     renderStrip(); renderFilters(); renderView(); renderFlags(); renderMap(); renderColPick();
   }
   function renderStrip() {
     const box = $('lvFiles'); box.replaceChildren();
     const byName = new Map((S.data?.files || []).map((f) => [f.name, f]));
-    const chip = (f, kind, label, onx, bad) => { const c = el('span', 'fchip' + (bad ? ' bad' : '')); c.title = f.name;
+    const chip = (f, kind, label, onx, bad, conv) => { const c = el('span', 'fchip' + (bad ? ' bad' : '')); c.title = f.name;
       c.append(el('span', 'k' + (kind === 'cost list' ? ' cost' : ''), kind), el('b', '', label));
+      if (conv !== undefined) { const xb = el('button', 'xl', 'xlsx'); xb.type = 'button'; xb.title = 'Download this export as an Excel table'; xb.setAttribute('aria-label', 'Download ' + f.name + ' as Excel'); xb.onclick = () => convertFile(conv); c.append(xb); }
       const x = el('button', '', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Remove ' + f.name); x.onclick = onx; c.append(x); return c; };
     for (const f of S.files) { const i = byName.get(f.name);
-      box.append(chip(f, f.detail === 'Item Sales Summary with Cost' ? 'with cost' : 'sales', i ? `${i.label} · ${money0(i.sales)}` : f.label, async () => { S.files = S.files.filter((g) => g !== f); await reload(); }, i && !i.reconciled)); }
+      const kind = (f.ext === 'pdf' ? 'pdf · ' : '') + (/with Cost/.test(f.detail || '') ? 'with cost' : 'sales');
+      const rcs = i && new Set(S.data.files.map((x) => x.rc)).size > 1 ? i.rc + ' · ' : '';
+      box.append(chip(f, kind, i ? `${rcs}${i.label} · ${money0(i.sales)}` : f.label, async () => { S.files = S.files.filter((g) => g !== f); await reload(); }, i && !i.reconciled, i ? i.id : undefined)); }
     if (S.cost) box.append(chip(S.cost, 'cost list', S.data?.cost?.ok ? `${S.cost.name} · ${S.data.cost.entries} costs` : S.cost.name, async () => { S.cost = null; S.costOverride = null; await reload(); }));
     for (const f of S.bad) box.append(chip(f, 'not read', f.name, () => { S.bad = S.bad.filter((g) => g !== f); renderStrip(); }, true));
     const add = el('label', 'dropmini'); add.htmlFor = 'lvIn2';
@@ -933,9 +959,11 @@ footer.fine { color: var(--muted); font-size: .8rem }
     const files = [...d.files].sort((a, b) => a.sort.localeCompare(b.sort));
     $('fbDaysList').replaceChildren(...files.map((f) => chk(f.label, money0(f.sales), S.fids.has(f.id), (on) => { on ? S.fids.add(f.id) : S.fids.delete(f.id); filtersChanged(); }, f.reconciled ? '' : 'check totals')));
     $('fbDaysTxt').textContent = S.fids.size === d.files.length ? (d.files.length === 1 ? files[0].label : `All ${d.files.length} exports`) : `${S.fids.size} of ${d.files.length} exports`;
-    renderLocList();
+    renderLocList(); renderRcList();
+    const multiRc = new Set(d.files.map((f) => f.rc)).size > 1;
     seg($('fbMetric'), METRICS, S.metric, (k) => { S.metric = k; S.sort = null; renderFilters(); renderView(); }, (k) => COSTM.has(k) && !d.has_cost);
-    seg($('fbGroup'), GROUPS, S.group, (k) => { S.group = k; S.sort = null; S.showAll = false; renderFilters(); renderTable(rowsInView()); });
+    if (S.group === 'rc' && !multiRc) S.group = 'location';
+    seg($('fbGroup'), GROUPS.filter(([k]) => k !== 'rc' || multiRc), S.group, (k) => { S.group = k; S.sort = null; S.showAll = false; renderFilters(); renderTable(rowsInView()); });
   }
   function renderLocList() {
     const d = S.data; const list = locMatches(); const box = $('fbLocsList'); box.replaceChildren();
@@ -950,6 +978,16 @@ footer.fine { color: var(--muted); font-size: .8rem }
     if (!list.length) box.append(el('p', 'hint', 'No location matches.'));
     updateLocTxt();
   }
+  function renderRcList() {
+    const d = S.data; const tot = new Map();
+    d.files.forEach((f) => tot.set(f.rc, (tot.get(f.rc) || 0) + f.sales));
+    const names = [...tot.keys()].sort((a, b) => tot.get(b) - tot.get(a));
+    $('fbRcPop').hidden = names.length < 2;
+    $('fbRcList').replaceChildren(...names.map((n) => chk(n, money0(tot.get(n)), S.rcs.has(n), (on) => { on ? S.rcs.add(n) : S.rcs.delete(n); updateRcTxt(names); filtersChanged(); })));
+    updateRcTxt(names);
+  }
+  function updateRcTxt(names) { $('fbRcTxt').textContent = S.rcs.size === names.length ? `All ${names.length} revenue centers` : S.rcs.size === 1 ? [...S.rcs][0] : `${S.rcs.size} of ${names.length} revenue centers`; }
+  $('fbRcBtn').onclick = (e) => { e.stopPropagation(); popToggle($('fbRcBtn'), $('fbRc')); };
   function updateLocTxt() { const n = S.data.locations.length; $('fbLocsTxt').textContent = S.locs.size === n ? `All ${n} location${n > 1 ? 's' : ''}` : S.locs.size === 1 ? [...S.locs][0] : `${S.locs.size} of ${n} locations`; }
   $('fbLocFind').addEventListener('input', renderLocList);
   $('fbOnly').onclick = () => { S.locs = new Set(locMatches().map((l) => l.name)); renderLocList(); filtersChanged(); };
@@ -957,6 +995,7 @@ footer.fine { color: var(--muted); font-size: .8rem }
     const t = e.target.closest('[data-all],[data-none]'); if (!t || !S.data) return;
     const all = t.hasAttribute('data-all'); const which = t.dataset.all || t.dataset.none;
     if (which === 'files') S.fids = new Set(all ? S.data.files.map((f) => f.id) : []);
+    else if (which === 'rcs') S.rcs = new Set(all ? S.data.files.map((f) => f.rc) : []);
     else locMatches().forEach((l) => all ? S.locs.add(l.name) : S.locs.delete(l.name));
     renderFilters(); renderView();
   });
@@ -1051,8 +1090,9 @@ footer.fine { color: var(--muted); font-size: .8rem }
     if (!rows.length) { ['chLoc', 'chItem', 'chMix', 'chTime'].forEach((i) => emptyChart(i, 'Nothing matches the filters')); return; }
     const top = (gs, n) => gs.filter((g) => mv(g, m) !== -Infinity).sort((a, b) => mv(b, m) - mv(a, m)).slice(0, n);
     // by location (or venue when many)
-    const lg = top(groups(rows, 'location'), 15);
-    $('chLocT').textContent = `${lg.length < groups(rows, 'location').length ? 'Top 15 locations' : 'Locations'} by ${mlab}`;
+    const dim = new Set(rows.map((r) => r[1])).size <= 1 && new Set(rows.map((r) => fileById(r[0]).rc)).size > 1 ? 'rc' : 'location';
+    const lg = top(groups(rows, dim), 15); const dn = dim === 'rc' ? 'revenue centers' : 'locations';
+    $('chLocT').textContent = `${lg.length < groups(rows, dim).length ? 'Top 15 ' + dn : dn[0].toUpperCase() + dn.slice(1)} by ${mlab}`;
     chart('chLoc', { type: 'bar', data: { labels: lg.map((g) => g.key), datasets: [{ data: lg.map((g) => mv(g, m)), backgroundColor: lg.map((g) => mv(g, m) < 0 ? coral : teal), borderRadius: 5, maxBarThickness: 22 }] }, options: baseOpts(true, fmt, metricShort(m)) });
     const ig = top(groups(rows, 'item'), 10);
     $('chItemT').textContent = `Top 10 items by ${mlab}`;
@@ -1130,6 +1170,10 @@ footer.fine { color: var(--muted); font-size: .8rem }
     else $('lvMore').hidden = true;
   }
 
+  async function convertFile(fid) {
+    try { const r = await busy('Converting to Excel…', async () => JSON.parse(py('explore.convert(_f)', { _f: fid }))); await saveFile(r.name, E.py.FS.readFile(r.file)); }
+    catch (e) { console.error(e); toast('That export could not be converted.'); }
+  }
   // ---------- data checks, location names, cost columns
   function renderFlags() {
     const fl = S.data.flags || []; const cnt = { error: 0, warning: 0, info: 0 }; fl.forEach((f) => cnt[f.level]++);
@@ -1151,10 +1195,17 @@ footer.fine { color: var(--muted); font-size: .8rem }
       const n = el('div', 'cat', c.category); n.append(el('small', '', money0(c.sales)));
       const i = el('input', 'text'); i.value = c.location; i.setAttribute('list', 'mapNames'); i.setAttribute('aria-label', 'Location for ' + c.category); i.dataset.cat = c.category;
       i.addEventListener('input', () => { $('mapApply').disabled = false; }); r.append(n, i); return r; }));
+    const raw = [...new Set(d.files.flatMap((f) => f.rc_raw || []))].sort();
+    $('rcMapBox').hidden = raw.length < 2;
+    $('rcGrid').replaceChildren(...raw.map((n) => { const r = el('div', 'maprow'); r.append(el('div', 'cat', n));
+      const i = el('input', 'text'); i.value = S.rcmap[n] || n; i.dataset.rc = n; i.setAttribute('aria-label', 'Name for ' + n);
+      i.addEventListener('input', () => { $('mapApply').disabled = false; }); r.append(i); return r; }));
     $('mapApply').disabled = true;
   }
-  $('mapApply').onclick = () => { for (const i of $('mapGrid').querySelectorAll('input[data-cat]')) { const v = i.value.trim(); if (v) S.mapping[i.dataset.cat] = v; } LS.set('sr_locmap', S.mapping); reload(); };
-  $('mapReset').onclick = () => { S.mapping = {}; LS.set('sr_locmap', {}); reload(); };
+  $('mapApply').onclick = () => { for (const i of $('mapGrid').querySelectorAll('input[data-cat]')) { const v = i.value.trim(); if (v) S.mapping[i.dataset.cat] = v; }
+    for (const i of $('rcGrid').querySelectorAll('input[data-rc]')) { const v = i.value.trim(); if (v && v !== i.dataset.rc) S.rcmap[i.dataset.rc] = v; else delete S.rcmap[i.dataset.rc]; }
+    LS.set('sr_locmap', S.mapping); LS.set('sr_rcmap', S.rcmap); reload(); };
+  $('mapReset').onclick = () => { S.mapping = {}; S.rcmap = {}; LS.set('sr_locmap', {}); LS.set('sr_rcmap', {}); reload(); };
   function renderColPick() {
     const c = S.data?.cost; const box = $('colPick'); if (!c) { box.hidden = true; return; }
     box.hidden = false; box.replaceChildren();
@@ -1224,7 +1275,8 @@ footer.fine { color: var(--muted); font-size: .8rem }
   $('lvXlsx').onclick = async () => {
     if (!S.data || !rowsInView().length) { toast('Nothing to export with the current filters.'); return; }
     const allL = S.locs.size === S.data.locations.length;
-    const sel = { fids: [...S.fids], locs: allL ? [] : [...S.locs], search: S.q.trim(), groupby: S.group, metric: S.metric };
+    const allR = S.rcs.size === new Set(S.data.files.map((f) => f.rc)).size;
+    const sel = { fids: [...S.fids], locs: allL ? [] : [...S.locs], rcs: allR ? [] : [...S.rcs], search: S.q.trim(), groupby: S.group, metric: S.metric };
     try { const r = await busy('Building the Excel file…', async () => JSON.parse(py('explore.export(_x)', { _x: JSON.stringify(sel) })));
       await saveFile(r.name, E.py.FS.readFile(r.file)); } catch (e) { console.error(e); toast('This view could not be exported.'); }
   };
@@ -1275,7 +1327,10 @@ footer.fine { color: var(--muted); font-size: .8rem }
   function pdfLive() {
     const rows = rowsInView(); const t = agg(rows); const fs = [...S.fids].map(fileById).sort((a, b) => a.sort.localeCompare(b.sort));
     const locsOn = new Set(rows.map((r) => r[1]));
-    const sub = `${fs[0].label}${fs.length > 1 ? ' to ' + fs.at(-1).label : ''}   |   ${locsOn.size === S.data.locations.length ? 'All ' + locsOn.size + ' locations' : locsOn.size + ' of ' + S.data.locations.length + ' locations'}${S.q ? '   |   items matching "' + S.q.trim() + '"' : ''}`;
+    const allRc = new Set(S.data.files.map((f) => f.rc)); const rcOn = [...new Set(rows.map((r) => fileById(r[0]).rc))];
+    const locTxt = S.data.locations.length === 1 ? S.data.locations[0].name : locsOn.size === S.data.locations.length ? 'All ' + locsOn.size + ' locations' : locsOn.size + ' of ' + S.data.locations.length + ' locations';
+    const rcTxt = allRc.size > 1 ? (rcOn.length === allRc.size ? `   |   all ${allRc.size} revenue centers` : `   |   ${rcOn.length <= 3 ? rcOn.join(', ') : rcOn.length + ' of ' + allRc.size + ' revenue centers'}`) : '';
+    const sub = `${periodText(fs)}   |   ${locTxt}${rcTxt}${S.q ? '   |   items matching "' + S.q.trim() + '"' : ''}`;
     const P = pdfDoc('Sales Summary', sub); P.header();
     const cmpI = S.q ? null : compareInfo();
     const items = [{ l: 'Sales', v: money(t.sales), s: cmpI ? `${t.sales >= cmpI.sales ? '+' : '-'}${Math.abs((t.sales / cmpI.sales - 1) * 100).toFixed(1)}% vs ${dLabel(cmpI.date)}` : '' },
@@ -1289,6 +1344,10 @@ footer.fine { color: var(--muted); font-size: .8rem }
     const lcols = [{ t: 'Location', w: .26 }, { t: 'Sales', w: .15, a: 'r' }, { t: 'Units', w: .1, a: 'r' }, { t: 'Avg price', w: .12, a: 'r' }].concat(cost ? [{ t: 'Margin', w: .1, a: 'r' }] : []).concat([{ t: 'Share', w: cost ? .27 : .37, a: 'r', bar: cost ? 6 : 5 }]);
     P.table(lcols, lg.map((g) => [g.key, money(g.sales), num(g.units), money(g.avg)].concat(cost ? [g.margin === null ? '-' : pct(g.margin)] : []).concat([pct(t.sales ? g.sales / t.sales : 0), g.sales / mx]))
       .concat([['Total', money(t.sales), num(t.units), money(t.avg)].concat(cost ? [t.margin === null ? '-' : pct(t.margin)] : []).concat(['100.0%', 0])]), { totalRow: true });
+    const rg = groups(rows, 'rc').sort((a, b) => b.sales - a.sales);
+    if (rg.length > 1) { const mr = Math.max(...rg.map((g) => g.sales), 1); P.h2('Sales by revenue center');
+      P.table([{ t: 'Revenue center', w: .3 }, { t: 'Sales', w: .16, a: 'r' }, { t: 'Units', w: .12, a: 'r' }, { t: 'Avg price', w: .14, a: 'r' }, { t: 'Share', w: .28, a: 'r', bar: 5 }],
+        rg.map((g) => [g.key, money(g.sales), num(g.units), money(g.avg), pct(t.sales ? g.sales / t.sales : 0), g.sales / mr]).concat([['Total', money(t.sales), num(t.units), money(t.avg), '100.0%', 0]]), { totalRow: true }); }
     const ig = groups(rows, 'item').sort((a, b) => b.sales - a.sales).slice(0, 15);
     P.h2('Top 15 items');
     P.table([{ t: 'Item', w: .34 }, { t: 'Location', w: .3 }, { t: 'Units', w: .1, a: 'r' }, { t: 'Sales', w: .13, a: 'r' }, { t: 'Avg price', w: .13, a: 'r' }],
@@ -1441,7 +1500,7 @@ footer.fine { color: var(--muted); font-size: .8rem }
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
     try { const j = JSON.parse(await f.text()); const recs = (j.records || []).filter((r) => r && /^\d{4}-\d{2}-\d{2}$/.test(r.date) && ['Morning', 'Evening', 'Full Day'].includes(r.shift) && r.loc && typeof r.sales === 'number');
       if (j.kind !== 'history' || !recs.length) throw new Error('not a backup');
-      recs.forEach((r) => { r.id = `${r.date}|${r.shift}|${r.loc}`; });
+      recs.forEach((r) => { r.id = recId(r); });
       const { added, updated } = await Store.upsert(recs); toast(`Imported ${new Set(recs.map((r) => r.date)).size} days (${added} new, ${updated} updated records).`, 4500); renderHistory();
     } catch (err) { toast('That file isn’t a Sales Report Studio history backup.'); }
   };

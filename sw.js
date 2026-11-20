@@ -1,6 +1,6 @@
 // Offline cache for the installed app. A new version is picked up automatically on the next visit.
-const CACHE = 'reports-aea220b6542d';
-const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'py/pyodide.js', 'py/pyodide.asm.js', 'py/pyodide.asm.wasm', 'py/pyodide-lock.json', 'py/python_stdlib.b64.txt', 'lib/et_xmlfile.b64.txt', 'lib/openpyxl.b64.txt', 'lib/xlrd.b64.txt', 'lib/app.b64.txt', 'lib/chart.umd.js', 'lib/jspdf.umd.min.js'];
+const CACHE = 'reports-6186c5eb03e7';
+const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'py/pyodide.js', 'py/pyodide.asm.js', 'py/pyodide.asm.wasm', 'py/pyodide-lock.json', 'py/python_stdlib.b64.txt', 'lib/et_xmlfile.b64.txt', 'lib/openpyxl.b64.txt', 'lib/xlrd.b64.txt', 'lib/app.b64.txt', 'lib/chart.umd.js', 'lib/jspdf.umd.min.js', 'lib/pdfminer.b64.txt', 'lib/charset_normalizer.b64.txt'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
 });

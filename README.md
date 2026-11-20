@@ -3,8 +3,10 @@
 Live sales reports, forecasting and Excel / PDF exports from Transact Cloud POS exports.
 Open it at **https://itsmoshahrukh.github.io/morning-evening-reports/** and install it as an app from the browser.
 
-**Live report** – drop any number of exports at once: Item Sales Detail (any shift, day or week, any location –
-Blue Wall, Harvest, all cafes), Item Sales Summary with Cost, and your own cost list (.xlsx, .xls or .csv).
+**Live report** – drop any number of exports at once, as Excel or PDF: Item Sales Detail, Item Sales Summary and
+Item Sales Summary with Cost (any shift, day or week, any location – Blue Wall, Harvest, cafes, Mullins), plus your own
+cost list (.xlsx, .xls or .csv). PDFs are read character by character and reconciled like Excel exports; any export can be
+downloaded as a clean Excel table. Revenue centers come from the register names and get their own filter and grouping.
 Filter by day/shift, location and venue; switch between sales, units, average price, add-ons, cost, profit and margin;
 search any item and open its deep dive (trend, locations, add-ons ordered with it). Download Excel or a PDF summary.
 
