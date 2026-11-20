@@ -5,62 +5,292 @@
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Sales Reports">
+<meta name="apple-mobile-web-app-title" content="Sales Studio">
 <style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}
 .installbtn{font:inherit;font-weight:600;font-size:.82rem;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 12px;cursor:pointer}
 .installbtn:hover{background:rgba(255,255,255,.2)}.installbtn:focus-visible{outline:2px solid #e9c46a;outline-offset:2px}</style>
 </head><body>
-<title>Shift Report Builder</title>
+<title>Sales Report Studio</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
-/* Layout: one working column — header band, two upload trays side by side, results list below. */
+/* Layout: navy sidebar with four views (Live report, Forecast, Excel reports, History); each view is a page head,
+   a sticky filter bar where needed, then cards on a cool grey ground. Collapses to a top bar on phones. */
 :root {
-  --bg: #f3f5f8; --panel: #ffffff; --ink: #1c2638; --muted: #5d6a7e; --line: #d8dee7;
-  --navy: #1f2a44; --teal: #2a9d8f; --teal-soft: #e3f3f1; --gold: #e9c46a;
-  --up: #1f8a5b; --down: #c4452f; --warn-bg: #fdf3e1; --warn-ink: #8a5a0b; --err-bg: #fbe9e6;
-  --band-ink: #ffffff; --band-sub: #c9d2df;
+  --bg: #eef1f5; --panel: #ffffff; --panel-2: #f6f8fb; --ink: #1a2436; --muted: #5b6880; --line: #dbe1ea; --line-2: #e8ecf2;
+  --navy: #1f2a44; --navy-2: #2a3758; --teal: #2a9d8f; --teal-2: #21867a; --teal-soft: #e2f3f0; --gold: #e9c46a; --gold-soft: #fbf3dc;
+  --coral: #e76f51; --slate: #5b6b82; --up: #1f8a5b; --down: #c4452f; --warn-bg: #fdf3e1; --warn-ink: #8a5a0b; --err-bg: #fbe9e6;
+  --band-ink: #ffffff; --band-sub: #b9c4d6; --shadow: 0 1px 2px rgba(20, 32, 56, .06), 0 4px 14px rgba(20, 32, 56, .05);
   --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-head: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif;
   --f-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #11161f; --panel: #19202c; --ink: #e6ebf2; --muted: #9aa6b8; --line: #2b3444;
-  --navy: #0c1220; --teal: #43b5a6; --teal-soft: #17302e; --gold: #e9c46a;
-  --up: #4cc38a; --down: #f0806b; --warn-bg: #2f2614; --warn-ink: #f0c56d; --err-bg: #34201d;
-  --band-ink: #ffffff; --band-sub: #a9b4c4; color-scheme: dark } }
+  --bg: #0f141c; --panel: #171e2a; --panel-2: #1c2433; --ink: #e6ebf2; --muted: #9aa6b8; --line: #2a3445; --line-2: #222b3a;
+  --navy: #0a101b; --navy-2: #141c2c; --teal: #46b8a9; --teal-2: #5cc7b8; --teal-soft: #163330; --gold: #e9c46a; --gold-soft: #2e2814;
+  --coral: #f08a6e; --slate: #8b9ab0; --up: #4cc38a; --down: #f0806b; --warn-bg: #2f2614; --warn-ink: #f0c56d; --err-bg: #35201d;
+  --band-ink: #ffffff; --band-sub: #a3afc2; --shadow: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #11161f; --panel: #19202c; --ink: #e6ebf2; --muted: #9aa6b8; --line: #2b3444;
-  --navy: #0c1220; --teal: #43b5a6; --teal-soft: #17302e; --gold: #e9c46a;
-  --up: #4cc38a; --down: #f0806b; --warn-bg: #2f2614; --warn-ink: #f0c56d; --err-bg: #34201d;
-  --band-ink: #ffffff; --band-sub: #a9b4c4; color-scheme: dark }
+  --bg: #0f141c; --panel: #171e2a; --panel-2: #1c2433; --ink: #e6ebf2; --muted: #9aa6b8; --line: #2a3445; --line-2: #222b3a;
+  --navy: #0a101b; --navy-2: #141c2c; --teal: #46b8a9; --teal-2: #5cc7b8; --teal-soft: #163330; --gold: #e9c46a; --gold-soft: #2e2814;
+  --coral: #f08a6e; --slate: #8b9ab0; --up: #4cc38a; --down: #f0806b; --warn-bg: #2f2614; --warn-ink: #f0c56d; --err-bg: #35201d;
+  --band-ink: #ffffff; --band-sub: #a3afc2; --shadow: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark }
 * { box-sizing: border-box }
 [hidden] { display: none !important }
-body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5 }
-.wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
-header.band { background: var(--navy); color: var(--band-ink) }
-header.band .wrap { padding-block: 28px 24px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between }
-h1 { margin: 0; font-size: 1.7rem; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance }
-.sub { margin: 4px 0 0; color: var(--band-sub); font-size: .92rem; max-width: 60ch }
-.engine { display: inline-flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--band-sub); background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); border-radius: 999px; padding: 5px 12px }
-.engine .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 1.2s ease-in-out infinite }
+html, body { height: 100% }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; margin: 0 }
+button { font: inherit }
+h1, h2, h3 { font-family: var(--f-head); letter-spacing: -0.01em; text-wrap: balance }
+.num { font-family: var(--f-num); font-variant-numeric: tabular-nums }
+
+/* ---------- shell */
+.shell { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100% }
+.side-nav { background: var(--navy); color: var(--band-ink); position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 20px 14px calc(16px + env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)) }
+.brand { display: flex; gap: 10px; align-items: center; padding: 2px 8px 22px }
+.brand svg { width: 34px; height: 34px; flex: none }
+.brand b { font-family: var(--f-head); font-size: 1.05rem; line-height: 1.15; display: block }
+.brand small { color: var(--band-sub); font-size: .74rem }
+.nav { display: grid; gap: 2px }
+.nav button { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; background: none; border: 0; color: var(--band-sub); padding: 10px 12px; border-radius: 9px; cursor: pointer; font-weight: 500; font-size: .93rem }
+.nav button svg { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round }
+.nav button:hover { background: rgba(255,255,255,.06); color: #fff }
+.nav button[aria-current="page"] { background: rgba(255,255,255,.1); color: #fff; box-shadow: inset 3px 0 0 var(--gold) }
+.nav button:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px }
+.nav .count { margin-left: auto; font-size: .72rem; font-family: var(--f-num); background: rgba(255,255,255,.12); padding: 0 7px; border-radius: 999px }
+.side-foot { margin-top: auto; display: grid; gap: 10px; padding: 0 6px }
+.engine { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--band-sub); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 5px 12px; width: fit-content }
+.engine .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); animation: pulse 1.2s ease-in-out infinite; flex: none }
 .engine.ready .dot { background: #4cc38a; animation: none }
 .engine.failed .dot { background: #f0806b; animation: none }
 @keyframes pulse { 50% { opacity: .35 } }
-@media (prefers-reduced-motion: reduce) { .engine .dot { animation: none } }
-main.wrap { padding-block: 24px 48px; display: grid; gap: 22px }
+.privacy { font-size: .74rem; color: var(--band-sub); line-height: 1.4 }
+.content { min-width: 0; padding: 26px max(16px, env(safe-area-inset-right, 0px)) 60px 28px }
+.view { max-width: 1240px; margin: 0 auto; display: grid; gap: 18px }
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr) }
+  .side-nav, .nav { min-width: 0; max-width: 100% }
+  .side-nav { position: sticky; top: 0; z-index: 30; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)) }
+  .brand { padding: 0; flex: 1 }
+  .brand small { display: none }
+  .side-foot { margin: 0; padding: 0 }
+  .privacy { display: none }
+  .nav { grid-auto-flow: column; overflow-x: auto; width: 100%; order: 3; gap: 4px }
+  .nav button { padding: 7px 11px; white-space: nowrap; font-size: .86rem }
+  .nav button[aria-current="page"] { box-shadow: inset 0 -3px 0 var(--gold) }
+  .content { padding: 18px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)) }
+}
+@media (prefers-reduced-motion: reduce) { .engine .dot { animation: none } * { transition: none !important } }
+
+/* ---------- page head */
+.pagehead { display: flex; flex-wrap: wrap; gap: 12px 20px; justify-content: space-between; align-items: end }
+.pagehead h1 { margin: 0; font-size: 1.75rem; line-height: 1.15 }
+.pagehead p { margin: 4px 0 0; color: var(--muted); font-size: .92rem; max-width: 70ch }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
+.btn { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: .9rem; border-radius: 9px; padding: 9px 15px; cursor: pointer; border: 1px solid transparent; text-decoration: none; line-height: 1.2 }
+.btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round }
+.btn.primary { background: var(--teal); color: #fff }
+.btn.primary:hover:not(:disabled) { background: var(--teal-2) }
+.btn.ghost { background: var(--panel); border-color: var(--line); color: var(--ink) }
+.btn.ghost:hover:not(:disabled) { border-color: var(--teal); color: var(--teal) }
+.btn.danger { background: var(--panel); border-color: var(--line); color: var(--down) }
+.btn.danger.armed { background: var(--down); color: #fff; border-color: var(--down) }
+.btn:disabled { opacity: .45; cursor: not-allowed }
+.btn:focus-visible, .chip:focus-visible, .seg button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px }
+.link { background: none; border: 0; color: var(--teal); cursor: pointer; font-weight: 600; padding: 0; font-size: .82rem }
+.link:focus-visible { outline: 2px solid var(--teal) }
+
+/* ---------- cards */
+.card2 { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); min-width: 0 }
+.card2 > .hd { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 14px; padding: 14px 18px 0 }
+.card2 > .hd h2 { margin: 0; font-size: 1rem }
+.card2 > .hd .sub { color: var(--muted); font-size: .8rem; font-family: var(--f-body); font-weight: 400 }
+.card2 > .bd { padding: 14px 18px 18px }
+.hint { margin: 0; color: var(--muted); font-size: .82rem }
+.eyebrow { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600 }
+
+/* ---------- empty state / drop */
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0; overflow: hidden }
+@media (max-width: 860px) { .hero { grid-template-columns: 1fr } }
+.hero .dropbig { margin: 18px; border: 2px dashed var(--line); border-radius: 12px; display: grid; place-items: center; text-align: center; padding: 38px 20px; cursor: pointer; transition: border-color .15s, background .15s; gap: 10px; min-height: 250px }
+.hero .dropbig:hover, .hero .dropbig.over, .dropmini.over { border-color: var(--teal); background: var(--teal-soft) }
+.hero .dropbig:focus-within { outline: 2px solid var(--teal); outline-offset: 2px }
+.dropbig svg { width: 46px; height: 46px; stroke: var(--teal); fill: none; stroke-width: 1.6 }
+.dropbig h2 { margin: 0; font-size: 1.3rem }
+.dropbig p { margin: 0; color: var(--muted); font-size: .9rem; max-width: 46ch }
+.sr-file { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none }
+.hero aside { background: var(--panel-2); border-left: 1px solid var(--line); padding: 22px; display: grid; gap: 14px; align-content: start }
+@media (max-width: 860px) { .hero aside { border-left: 0; border-top: 1px solid var(--line) } }
+.hero aside h3 { margin: 0; font-size: .95rem }
+.knows { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; font-size: .86rem; color: var(--muted) }
+.knows li { display: grid; grid-template-columns: 22px 1fr; gap: 8px }
+.knows b { color: var(--ink); font-weight: 600 }
+.knows svg { width: 18px; height: 18px; stroke: var(--teal); fill: none; stroke-width: 2; margin-top: 2px }
+.toggle { display: inline-flex; gap: 9px; align-items: center; font-size: .84rem; color: var(--ink); cursor: pointer }
+.toggle input { width: 34px; height: 20px; appearance: none; background: var(--line); border-radius: 999px; position: relative; cursor: pointer; transition: background .15s; margin: 0; flex: none }
+.toggle input::after { content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #fff; top: 2px; left: 2px; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.25) }
+.toggle input:checked { background: var(--teal) } .toggle input:checked::after { left: 16px }
+.toggle input:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px }
+
+/* ---------- file strip */
+.filestrip { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px }
+.fchip { display: inline-flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px 6px 4px 12px; font-size: .82rem; max-width: 100%; min-width: 0 }
+.fchip b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.fchip .k { font-size: .66rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--teal); background: var(--teal-soft); border-radius: 999px; padding: 0 7px }
+.fchip .k.cost { color: var(--warn-ink); background: var(--gold-soft) }
+.fchip.bad { background: var(--err-bg); border-color: transparent }
+.fchip.bad .k { color: var(--down); background: transparent }
+.fchip button { border: 0; background: none; color: var(--muted); cursor: pointer; width: 22px; height: 22px; border-radius: 50%; line-height: 1; font-size: 1rem }
+.fchip button:hover { background: var(--line); color: var(--down) }
+.fchip button:focus-visible { outline: 2px solid var(--teal) }
+.dropmini { display: inline-flex; align-items: center; gap: 6px; font-size: .84rem; font-weight: 600; color: var(--teal); border: 1.5px dashed var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer }
+.dropmini:hover { border-color: var(--teal) }
+.dropmini:focus-within { outline: 2px solid var(--teal); outline-offset: 2px }
+.strip-right { margin-left: auto; display: flex; gap: 14px; align-items: center; flex-wrap: wrap }
+
+/* ---------- filter bar */
+.filterbar > * { min-width: 0 }
+.filterbar { position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 12px; background: color-mix(in srgb, var(--panel) 92%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow) }
+@media (max-width: 900px) { .filterbar { position: static } }
+.pop { position: relative }
+.chip { display: inline-flex; align-items: center; gap: 7px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; padding: 7px 11px; font-size: .86rem; font-weight: 600; color: var(--ink); cursor: pointer; white-space: nowrap }
+.chip small { font-weight: 500; color: var(--muted) }
+.chip svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2 }
+.chip[aria-expanded="true"] { border-color: var(--teal); color: var(--teal) }
+.panel { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; width: min(360px, calc(100vw - 32px)); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(15, 25, 45, .18); padding: 12px; display: grid; gap: 10px }
+.panel .scroller { max-height: 330px; overflow-y: auto; display: grid; gap: 2px; margin: 0 -4px; padding: 0 4px }
+.panel .grp { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; padding: 8px 6px 2px; display: flex; justify-content: space-between; align-items: center }
+.chk { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; font-size: .86rem; padding: 5px 6px; border-radius: 7px; cursor: pointer }
+.chk:hover { background: var(--teal-soft) }
+.chk input { accent-color: var(--teal); margin: 0 }
+.chk .v { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-size: .76rem; color: var(--muted) }
+.chk .warn { color: var(--warn-ink); font-size: .7rem; margin-left: 4px }
+.linkrow { display: flex; gap: 12px; flex-wrap: wrap }
+input.text, select.text { font: inherit; font-size: .9rem; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--ink) }
+input.text:focus, select.text:focus { outline: 2px solid var(--teal); outline-offset: 0; border-color: transparent }
+.seg { max-width: 100%; display: inline-flex; flex-wrap: wrap; background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 2px }
+.seg button { background: none; border: 0; padding: 5px 10px; border-radius: 7px; font-size: .82rem; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap }
+.seg button[aria-pressed="true"] { background: var(--panel); color: var(--teal); box-shadow: 0 1px 2px rgba(0,0,0,.08) }
+.seg button:disabled { opacity: .4; cursor: not-allowed }
+.search { position: relative; flex: 1 1 260px; min-width: 0 }
+.search input { font: inherit; font-size: .93rem; width: 100%; padding: 9px 12px 9px 36px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-2); color: var(--ink) }
+.search input:focus { outline: 2px solid var(--teal); border-color: transparent; background: var(--panel) }
+.search > svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; stroke: var(--muted); fill: none; stroke-width: 2 }
+.sugg { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 45; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(15, 25, 45, .18); padding: 6px; display: grid; gap: 2px; max-height: 380px; overflow-y: auto }
+.sugg button { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; text-align: left; background: none; border: 0; padding: 8px 10px; border-radius: 8px; cursor: pointer; color: var(--ink) }
+.sugg button:hover, .sugg button.on { background: var(--teal-soft) }
+.sugg b { font-weight: 600; font-size: .9rem } .sugg small { color: var(--muted); font-size: .76rem; grid-column: 1 } .sugg .num { font-size: .82rem; grid-row: 1 / span 2; grid-column: 2; align-self: center }
+.sugg .all { grid-template-columns: 1fr; color: var(--teal); font-weight: 600; font-size: .84rem }
+
+/* ---------- KPIs */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 12px }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px 12px; box-shadow: var(--shadow); min-width: 0; position: relative; overflow: hidden }
+.kpi::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--teal) }
+.kpi.cost::before { background: var(--gold) } .kpi.alt::before { background: var(--slate) }
+.kpi span { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600 }
+.kpi b { display: block; font-family: var(--f-num); font-variant-numeric: tabular-nums; font-size: 1.32rem; font-weight: 600; margin-top: 3px; overflow-wrap: anywhere }
+.kpi em { display: block; font-style: normal; font-size: .76rem; color: var(--muted); margin-top: 1px; min-height: 1.1em }
+.kpi em.up { color: var(--up) } .kpi em.down { color: var(--down) }
+.kpi.txt b { font-family: var(--f-body); font-size: .95rem; line-height: 1.3 }
+.kpi.off b { font-family: var(--f-body); font-size: .86rem; font-weight: 500; color: var(--muted) }
+
+/* ---------- charts */
+.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
+@media (max-width: 980px) { .charts { grid-template-columns: 1fr } }
+.chartcard .bd { position: relative }
+.cv { position: relative; width: 100%; height: 300px }
+.cv.tall { height: 360px }
+.chartnote { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: .88rem; text-align: center; padding: 20px }
+
+/* ---------- tables */
+.tscroll { overflow: auto; max-height: 580px }
+table.data { width: 100%; border-collapse: collapse; font-size: .85rem }
+table.data th { position: sticky; top: 0; z-index: 1; background: var(--panel); text-align: right; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 9px 12px; border-bottom: 1px solid var(--line); cursor: pointer; white-space: nowrap; user-select: none; font-weight: 700 }
+table.data th:first-child, table.data td:first-child { text-align: left }
+table.data th[aria-sort] { color: var(--teal) }
+table.data th[aria-sort="descending"]::after { content: " ↓" } table.data th[aria-sort="ascending"]::after { content: " ↑" }
+table.data th:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px }
+table.data td { padding: 8px 12px; border-bottom: 1px solid var(--line-2); text-align: right; font-family: var(--f-num); font-variant-numeric: tabular-nums; white-space: nowrap }
+table.data td:first-child { font-family: var(--f-body); font-weight: 600; white-space: normal; min-width: 170px }
+table.data td .subt { display: block; font-weight: 400; font-size: .74rem; color: var(--muted) }
+table.data tbody tr.click { cursor: pointer }
+table.data tbody tr.click:hover td { background: var(--teal-soft) }
+table.data tr.total td { font-weight: 700; background: var(--panel-2); border-top: 1px solid var(--line) }
+table.data td.na { color: var(--muted) }
+table.data td .bar { display: inline-block; height: 6px; border-radius: 3px; background: var(--teal); vertical-align: middle; margin-right: 8px; opacity: .75 }
+.more { padding: 10px 18px 16px; font-size: .82rem; color: var(--muted); display: flex; gap: 10px; align-items: center }
+.pos { color: var(--up) } .neg { color: var(--down) }
+
+/* ---------- flags */
+.flags { display: grid; gap: 8px }
+.flag { border: 1px solid var(--line); border-left: 4px solid var(--slate); border-radius: 9px; padding: 9px 12px; background: var(--panel); font-size: .86rem }
+.flag.error { border-left-color: var(--down) } .flag.warning { border-left-color: var(--gold) }
+.flag summary { cursor: pointer; display: flex; gap: 10px; align-items: baseline; list-style: none }
+.flag summary::-webkit-details-marker { display: none }
+.flag summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px }
+.lvl { font-size: .66rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 1px 8px; border-radius: 999px; white-space: nowrap }
+.lvl.error { background: var(--err-bg); color: var(--down) } .lvl.warning { background: var(--warn-bg); color: var(--warn-ink) } .lvl.info { background: var(--teal-soft); color: var(--teal) } .lvl.ok { background: var(--teal-soft); color: var(--up) }
+.flag ul { margin: 8px 0 2px; padding-left: 18px; color: var(--muted); font-size: .8rem; display: grid; gap: 2px; max-height: 220px; overflow-y: auto }
+.badges { display: flex; gap: 6px; flex-wrap: wrap }
+details.fold > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 18px; font-family: var(--f-head); font-weight: 600 }
+details.fold > summary::-webkit-details-marker { display: none }
+details.fold > summary::after { content: "Show"; font-family: var(--f-body); font-size: .8rem; color: var(--teal); font-weight: 600 }
+details.fold[open] > summary::after { content: "Hide" }
+details.fold > summary:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px }
+details.fold > .bd { padding: 0 18px 18px }
+.mapgrid { display: grid; gap: 6px; max-height: 320px; overflow-y: auto }
+.maprow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: center; font-size: .84rem }
+.maprow .cat { overflow-wrap: anywhere } .maprow .cat small { display: block; color: var(--muted); font-size: .74rem }
+.maprow.guess .cat::after { content: "check"; margin-left: 6px; font-size: .64rem; font-weight: 700; text-transform: uppercase; color: var(--warn-ink); background: var(--warn-bg); padding: 0 6px; border-radius: 999px }
+.colpick { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px }
+.colpick label { display: grid; gap: 4px; font-size: .78rem; color: var(--muted) }
+.twocol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px }
+@media (max-width: 980px) { .twocol { grid-template-columns: 1fr } }
+
+/* ---------- drawer */
+.scrim { position: fixed; inset: 0; background: rgba(10, 16, 28, .38); z-index: 60 }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100vw); z-index: 61; background: var(--bg); box-shadow: -12px 0 40px rgba(0,0,0,.2); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px) }
+.drawer .dh { background: var(--navy); color: var(--band-ink); padding: 18px max(18px, env(safe-area-inset-right, 0px)) 16px 20px; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px }
+.drawer .dh h2 { margin: 0; font-size: 1.3rem }
+.drawer .dh p { margin: 0; color: var(--band-sub); font-size: .82rem; grid-column: 1 }
+.drawer .dh button { grid-row: 1 / span 2; grid-column: 2; align-self: start; background: rgba(255,255,255,.1); border: 0; color: #fff; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 1.2rem }
+.drawer .dh button:focus-visible { outline: 2px solid var(--gold) }
+.drawer .db { overflow-y: auto; padding: 16px max(18px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) 20px; display: grid; gap: 14px; align-content: start }
+.drawer .kpis { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) }
+.drawer .cv { height: 220px }
+.mini { width: 100%; border-collapse: collapse; font-size: .84rem }
+.mini th { text-align: right; font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line) }
+.mini th:first-child, .mini td:first-child { text-align: left }
+.mini td { padding: 6px 8px; border-bottom: 1px solid var(--line-2); text-align: right; font-family: var(--f-num); font-variant-numeric: tabular-nums }
+.mini td:first-child { font-family: var(--f-body); font-weight: 600 }
+
+/* ---------- forecast / history */
+.progress { height: 10px; background: var(--line-2); border-radius: 999px; overflow: hidden }
+.progress > i { display: block; height: 100%; background: linear-gradient(90deg, var(--teal), var(--gold)); border-radius: 999px }
+.statgrid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: start }
+@media (max-width: 900px) { .statgrid { grid-template-columns: 1fr } }
+.bignum { font-family: var(--f-num); font-size: 2.2rem; font-weight: 600; line-height: 1 }
+.bignum small { font-size: 1rem; color: var(--muted); font-family: var(--f-body); font-weight: 500 }
+.opts { display: grid; gap: 12px }
+.opts label.f { display: grid; gap: 5px; font-size: .8rem; color: var(--muted); font-weight: 600 }
+.unusual { display: grid; gap: 6px; max-height: 210px; overflow-y: auto }
+.note { font-size: .8rem; color: var(--warn-ink); background: var(--warn-bg); border-radius: 8px; padding: 8px 12px }
+.okline { font-size: .8rem; color: var(--up) }
+
+/* ---------- legacy Excel-report view */
 .trays { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px }
 @media (max-width: 760px) { .trays { grid-template-columns: 1fr } }
-.tray { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start }
-.tray h2 { margin: 0; font-size: 1rem; font-weight: 600; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap }
-.tray h2 small { font-weight: 400; color: var(--muted); font-size: .82rem }
-.drop { border: 1.5px dashed var(--line); border-radius: 8px; padding: 18px 14px; text-align: center; color: var(--muted); font-size: .9rem; cursor: pointer; transition: border-color .15s, background .15s }
+.tray { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start; box-shadow: var(--shadow) }
+.tray h2 { margin: 0; font-size: 1rem; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap }
+.tray h2 small { font-family: var(--f-body); font-weight: 400; color: var(--muted); font-size: .8rem }
+.drop { border: 1.5px dashed var(--line); border-radius: 9px; padding: 18px 14px; text-align: center; color: var(--muted); font-size: .9rem; cursor: pointer; transition: border-color .15s, background .15s; position: relative }
 .drop:hover, .drop.over { border-color: var(--teal); background: var(--teal-soft); color: var(--ink) }
 .drop:focus-within { outline: 2px solid var(--teal); outline-offset: 2px }
 .drop strong { color: var(--teal); font-weight: 600 }
 .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none }
 .files { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none }
-.file { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; font-size: .86rem; min-width: 0 }
+.file { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: .86rem; min-width: 0 }
 .file .what { font-weight: 600; min-width: 0 }
 .file .fn { grid-column: 1 / -1; color: var(--muted); font-size: .76rem; overflow-wrap: anywhere }
 .file .amt { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-size: .84rem }
@@ -68,550 +298,224 @@ main.wrap { padding-block: 24px 48px; display: grid; gap: 22px }
 .file .err { grid-column: 1 / -1; color: var(--down); font-size: .8rem }
 .x { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 1.05rem; line-height: 1; padding: 2px 4px; border-radius: 4px }
 .x:hover { color: var(--down) } .x:focus-visible { outline: 2px solid var(--teal) }
-.tag { display: inline-block; font-size: .7rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; background: var(--teal-soft); color: var(--teal); margin-left: 6px; vertical-align: 1px }
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; background: var(--teal-soft); color: var(--teal); margin-left: 6px; vertical-align: 1px }
 .tag.h { background: var(--warn-bg); color: var(--warn-ink) }
-.hint { margin: 0; color: var(--muted); font-size: .82rem }
-.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center }
-button.primary, button.ghost { font: inherit; font-weight: 600; border-radius: 8px; padding: 10px 18px; cursor: pointer; border: 1px solid transparent }
+button.primary, button.ghost { font: inherit; font-weight: 600; border-radius: 9px; padding: 9px 16px; cursor: pointer; border: 1px solid transparent }
 button.primary { background: var(--teal); color: #fff }
-button.primary:hover:not(:disabled) { filter: brightness(1.06) }
+button.primary:hover:not(:disabled) { background: var(--teal-2) }
 button.primary:disabled { opacity: .45; cursor: not-allowed }
-button.ghost { background: transparent; border-color: var(--line); color: var(--ink) }
+button.ghost { background: var(--panel); border-color: var(--line); color: var(--ink) }
 button.ghost:hover { border-color: var(--teal) }
-button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px }
 .status { color: var(--muted); font-size: .88rem }
 .results { display: grid; gap: 12px }
 .results h2 { margin: 6px 0 0; font-size: 1.05rem }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; grid-template-columns: 1fr auto; gap: 10px 18px; align-items: center; min-width: 0 }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; grid-template-columns: 1fr auto; gap: 10px 18px; align-items: center; min-width: 0; box-shadow: var(--shadow) }
 .card .t { font-weight: 700; font-size: 1.02rem }
 .card .fname { color: var(--muted); font-size: .8rem; overflow-wrap: anywhere }
 .figs { display: flex; flex-wrap: wrap; gap: 6px 22px; grid-column: 1 / -1 }
 .fig { display: grid }
-.fig span { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em }
+.fig span { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em }
 .fig b { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 1.02rem }
 .chg.up { color: var(--up) } .chg.down { color: var(--down) }
-.notes { grid-column: 1 / -1; margin: 0; padding: 8px 10px; background: var(--warn-bg); color: var(--warn-ink); border-radius: 7px; font-size: .82rem; list-style: none; display: grid; gap: 2px }
+.notes { grid-column: 1 / -1; margin: 0; padding: 8px 10px; background: var(--warn-bg); color: var(--warn-ink); border-radius: 8px; font-size: .82rem; list-style: none; display: grid; gap: 2px }
 .card.fail { background: var(--err-bg); border-color: transparent }
 .card.fail pre { grid-column: 1 / -1; margin: 0; white-space: pre-wrap; font-family: var(--f-num); font-size: .8rem; color: var(--ink) }
 .saved { font-size: .8rem; color: var(--up) }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: s }
-.steps li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: .86rem; color: var(--muted); min-width: 0 }
+.steps li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: .86rem; color: var(--muted); min-width: 0 }
 .steps li::before { content: counter(s); display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--navy); color: #fff; font-size: .75rem; font-weight: 700; margin-right: 8px }
 .steps b { color: var(--ink) }
 @media (max-width: 640px) { .steps { grid-template-columns: 1fr } }
-footer { color: var(--muted); font-size: .8rem }
+footer.fine { color: var(--muted); font-size: .8rem }
+
+/* ---------- toast */
+.toast { position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 80; background: var(--navy); color: #fff; border-radius: 10px; padding: 10px 16px; font-size: .88rem; box-shadow: 0 10px 30px rgba(0,0,0,.25); max-width: calc(100vw - 32px) }
+.busy { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: rgba(10, 16, 28, .25) }
+.busy div { background: var(--panel); border-radius: 12px; padding: 16px 22px; box-shadow: var(--shadow); font-weight: 600; display: flex; gap: 12px; align-items: center }
+.spin { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--teal); animation: spin .8s linear infinite }
+@keyframes spin { to { transform: rotate(360deg) } }
 </style>
 
-<header class="band">
-  <div class="wrap">
-    <div>
-      <h1>Shift Report Builder</h1>
-      <p class="sub">Drop in Transact exports and get the Morning, Evening, Harvest weekly and Sales &amp; Margin reports back as Excel files.</p>
+<div class="shell">
+  <nav class="side-nav" aria-label="Main">
+    <div class="brand">
+      <svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="#2a3758"/><rect x="7" y="17" width="5" height="10" rx="1.2" fill="#2a9d8f"/><rect x="14.5" y="12" width="5" height="15" rx="1.2" fill="#2a9d8f"/><rect x="22" y="6.5" width="5" height="20.5" rx="1.2" fill="#e9c46a"/></svg>
+      <div><b>Sales Report Studio</b><small>UMass Dining · Transact exports</small></div>
     </div>
-    <div class="engine" id="engine" role="status"><span class="dot"></span><span id="engineText">Getting the report engine ready…</span></div>
-  </div>
-</header>
-
-<nav class="tabs" aria-label="Sections">
-  <div class="wrap tabrow" role="tablist">
-    <button role="tab" id="tabbtn-shift" aria-selected="true" data-tab="shift">Shift reports</button>
-    <button role="tab" id="tabbtn-explore" aria-selected="false" data-tab="explore">Explore sales &amp; costs</button>
-  </div>
-</nav>
-
-<main class="wrap" id="tab-shift">
-  <ol class="steps">
-    <li><b>Today’s exports.</b> Morning and Evening together is fine; they become separate reports. Add a station-only export (like Yum Bakery) and it’s merged into its shift.</li>
-    <li><b>Comparison exports</b> (optional). The previous trading day, or the same day last week. Each shift is matched to its shift.</li>
-    <li><b>Build, then download.</b> Files are read in this browser. Nothing is uploaded anywhere.</li>
-  </ol>
-
-  <section class="trays">
-    <div class="tray">
-      <h2>Exports to report on <small>.xls or .xlsx · Item Sales Detail, Harvest weekly or Item Sales Summary with Cost</small></h2>
-      <label class="drop" id="dropCur" for="inCur">
-        <input type="file" id="inCur" accept=".xls,.xlsx" multiple>
-        <span><strong>Choose files</strong> or drop them here</span>
-      </label>
-      <ul class="files" id="listCur"></ul>
+    <div class="nav" role="tablist" aria-label="Views">
+      <button type="button" data-view="live" aria-current="page"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Live report</button>
+      <button type="button" data-view="forecast"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>Forecast</button>
+      <button type="button" data-view="reports"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h8"/></svg>Excel reports</button>
+      <button type="button" data-view="history"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>History<span class="count" id="navHist">0</span></button>
     </div>
-    <div class="tray">
-      <h2>Compare with <small>optional</small></h2>
-      <label class="drop" id="dropPrev" for="inPrev">
-        <input type="file" id="inPrev" accept=".xls,.xlsx" multiple>
-        <span><strong>Choose files</strong> or drop them here</span>
-      </label>
-      <ul class="files" id="listPrev"></ul>
-      <p class="hint">Without these, the reports still build; the comparison columns show “–”.</p>
+    <div class="side-foot">
+      <div class="engine" id="engine" role="status"><span class="dot"></span><span id="engineText">Starting up…</span></div>
+      <p class="privacy">Files are read on this device. Nothing is uploaded, and history stays in this browser.</p>
     </div>
-  </section>
+  </nav>
 
-  <div class="actions">
-    <button class="primary" id="build" disabled>Build reports</button>
-    <span class="status" id="status">Add at least one export to start.</span>
-  </div>
-
-  <section class="results" id="results" hidden>
-    <div class="actions" style="justify-content:space-between">
-      <h2>Reports</h2>
-      <button class="ghost" id="saveAll" hidden>Download all (.zip)</button>
-    </div>
-    <div id="cards" class="results"></div>
-  </section>
-
-  <footer>Every report is checked before it’s built: item totals must match the register’s category totals and grand total, or the file is refused with the reason.</footer>
-</main>
-<style>
-.tabs { background: var(--navy); border-top: 1px solid rgba(255,255,255,.08) }
-.tabrow { display: flex; gap: 4px; overflow-x: auto }
-.tabrow button { font: inherit; font-weight: 600; font-size: .92rem; color: var(--band-sub); background: none; border: 0; padding: 10px 14px 11px; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap }
-.tabrow button[aria-selected="true"] { color: #fff; border-bottom-color: var(--gold) }
-.tabrow button:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px }
-.ex-load { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px }
-@media (max-width: 760px) { .ex-load { grid-template-columns: 1fr } }
-.ex-body { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 18px; align-items: start }
-@media (max-width: 900px) { .ex-body { grid-template-columns: 1fr } }
-.side { display: grid; gap: 14px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 10px) }
-@media (max-width: 900px) { .side { position: static } }
-.box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; min-width: 0 }
-.box h3 { margin: 0; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; align-items: baseline }
-.box h3 small { text-transform: none; letter-spacing: 0; font-weight: 500 }
-.linkbtns { display: flex; gap: 10px; font-size: .8rem }
-.linkbtns button { font: inherit; background: none; border: 0; color: var(--teal); cursor: pointer; padding: 0; font-weight: 600 }
-.linkbtns button:focus-visible { outline: 2px solid var(--teal) }
-input.text, select.text { font: inherit; font-size: .9rem; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--ink) }
-input.text:focus, select.text:focus { outline: 2px solid var(--teal); outline-offset: 0; border-color: transparent }
-.checks { max-height: 290px; overflow-y: auto; display: grid; gap: 2px; margin: 0 -4px; padding: 0 4px }
-.chk { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; font-size: .86rem; padding: 4px 6px; border-radius: 6px; cursor: pointer }
-.chk:hover { background: var(--teal-soft) }
-.chk input { accent-color: var(--teal); margin: 0 }
-.chk .v { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-size: .78rem; color: var(--muted) }
-.chk .warn { color: var(--warn-ink); font-size: .72rem; margin-left: 4px }
-.seg { display: flex; flex-wrap: wrap; gap: 6px }
-.seg button { font: inherit; font-size: .82rem; font-weight: 600; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer }
-.seg button[aria-pressed="true"] { background: var(--teal); border-color: var(--teal); color: #fff }
-.seg button:disabled { opacity: .4; cursor: not-allowed }
-.seg button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px }
-.searchbar { position: relative }
-.searchbar input { font: inherit; font-size: 1rem; width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink) }
-.searchbar input:focus { outline: 2px solid var(--teal); border-color: transparent }
-.searchbar svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; stroke: var(--muted); fill: none; stroke-width: 2 }
-.main { display: grid; gap: 14px; min-width: 0 }
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px }
-.kpi { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--teal); border-radius: 8px; padding: 10px 12px; min-width: 0 }
-.kpi span { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted) }
-.kpi b { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-size: 1.15rem; font-weight: 600; overflow-wrap: anywhere }
-.kpi.cost { border-top-color: var(--gold) }
-.kpi.off b { color: var(--muted); font-family: var(--f-body); font-size: .82rem; font-weight: 500 }
-.chartbox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0 }
-.chartbox h3 { margin: 0 0 8px; font-size: .95rem }
-.chartbox svg { width: 100%; height: auto; display: block }
-.tablebox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; overflow: hidden }
-.tablebox .head { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line) }
-.tablebox .head h3 { margin: 0; font-size: .95rem }
-.tscroll { overflow-x: auto; max-height: 560px; overflow-y: auto }
-table.data { width: 100%; border-collapse: collapse; font-size: .84rem }
-table.data th { position: sticky; top: 0; background: var(--panel); text-align: right; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); cursor: pointer; white-space: nowrap; user-select: none }
-table.data th:first-child, table.data td:first-child { text-align: left }
-table.data th[aria-sort] { color: var(--ink) }
-table.data th:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px }
-table.data td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: right; font-family: var(--f-num); font-variant-numeric: tabular-nums; white-space: nowrap }
-table.data td:first-child { font-family: var(--f-body); font-weight: 600; white-space: normal; min-width: 160px }
-table.data td .subt { display: block; font-weight: 400; font-size: .74rem; color: var(--muted) }
-table.data tr.total td { font-weight: 700; background: var(--teal-soft) }
-table.data td.na { color: var(--muted) }
-.more { padding: 10px 14px; font-size: .82rem; color: var(--muted); display: flex; gap: 10px; align-items: center }
-.flags { display: grid; gap: 8px }
-.flag { border: 1px solid var(--line); border-left: 4px solid var(--muted); border-radius: 8px; padding: 9px 12px; background: var(--panel); font-size: .86rem }
-.flag.error { border-left-color: var(--down) } .flag.warning { border-left-color: var(--gold) }
-.flag summary { cursor: pointer; display: flex; gap: 10px; align-items: baseline; list-style: none }
-.flag summary::-webkit-details-marker { display: none }
-.flag summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px }
-.lvl { font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; white-space: nowrap }
-.lvl.error { background: var(--err-bg); color: var(--down) } .lvl.warning { background: var(--warn-bg); color: var(--warn-ink) } .lvl.info { background: var(--teal-soft); color: var(--teal) }
-.flag ul { margin: 8px 0 2px; padding-left: 18px; color: var(--muted); font-size: .8rem; display: grid; gap: 2px; max-height: 220px; overflow-y: auto }
-.badges { display: flex; gap: 6px; flex-wrap: wrap }
-.mapgrid { display: grid; gap: 6px; max-height: 300px; overflow-y: auto }
-.maprow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: center; font-size: .84rem }
-.maprow .cat { overflow-wrap: anywhere } .maprow .cat small { display: block; color: var(--muted); font-size: .74rem }
-.maprow.guess .cat::after { content: "check"; margin-left: 6px; font-size: .66rem; font-weight: 700; text-transform: uppercase; color: var(--warn-ink); background: var(--warn-bg); padding: 0 6px; border-radius: 999px }
-.colpick { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px }
-.colpick label { display: grid; gap: 4px; font-size: .78rem; color: var(--muted) }
-.empty { text-align: center; color: var(--muted); padding: 30px 14px; font-size: .9rem }
-.sample-note { font-size: .8rem; color: var(--warn-ink); background: var(--warn-bg); border-radius: 7px; padding: 6px 10px }
-</style>
-
-<main class="wrap" id="tab-explore" hidden>
-  <section class="ex-load">
-    <div class="tray">
-      <h2>Sales exports <small>Item Sales Detail or Item Sales Summary with Cost · any number of days or locations</small></h2>
-      <label class="drop" id="exDropSales" for="exInSales">
-        <input type="file" id="exInSales" accept=".xls,.xlsx" multiple>
-        <span><strong>Choose files</strong> or drop them here</span>
-      </label>
-      <ul class="files" id="exListSales"></ul>
-    </div>
-    <div class="tray">
-      <h2>Item costs <small>optional · .xlsx, .xls or .csv</small></h2>
-      <label class="drop" id="exDropCost" for="exInCost">
-        <input type="file" id="exInCost" accept=".xls,.xlsx,.csv">
-        <span><strong>Choose a cost list</strong> or drop it here</span>
-      </label>
-      <ul class="files" id="exListCost"></ul>
-      <p class="hint">Not needed for “Item Sales Summary with Cost” exports, which carry their own costs. A list needs an item number or item name column and a cost column. Columns are found automatically, and you can change them.</p>
-      <div id="exColPick" hidden></div>
-    </div>
-  </section>
-
-  <div class="searchbar">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
-    <input id="exSearch" type="search" placeholder="Search an item by name or item number…" aria-label="Search items" disabled>
-  </div>
-
-  <section class="ex-body">
-    <aside class="side">
-      <div class="box">
-        <h3>Days &amp; shifts <span class="linkbtns"><button type="button" data-all="files">All</button><button type="button" data-none="files">None</button></span></h3>
-        <div class="checks" id="exFiles"><p class="hint">Add sales exports to begin.</p></div>
-      </div>
-      <div class="box">
-        <h3>Locations <small id="exLocCount"></small></h3>
-        <input class="text" id="exLocSearch" type="search" placeholder="Find a location…" aria-label="Find a location">
-        <div class="linkbtns"><button type="button" data-all="locs">Select all</button><button type="button" data-none="locs">Clear</button><button type="button" id="exOnlyShown">Only matches</button></div>
-        <div class="checks" id="exLocs"></div>
-      </div>
-      <div class="box">
-        <h3>Show</h3>
-        <div class="seg" id="exMetric" role="group" aria-label="Measure"></div>
-        <h3>Group by</h3>
-        <div class="seg" id="exGroup" role="group" aria-label="Group by"></div>
-      </div>
-    </aside>
-
-    <div class="main">
-      <div class="kpis" id="exKpis"></div>
-      <div class="chartbox"><h3 id="exChartTitle">Top 15</h3><div id="exChart"><div class="empty">Your chart appears here once sales exports are added.</div></div></div>
-      <div class="tablebox">
-        <div class="head">
-          <h3 id="exTableTitle">Breakdown</h3>
-          <div class="actions"><span class="saved" id="exSaved" hidden></span><button class="primary" id="exExport" type="button" disabled>Download this view (.xlsx)</button></div>
+  <div class="content">
+    <!-- ================= LIVE REPORT ================= -->
+    <section class="view" id="view-live">
+      <div class="pagehead">
+        <div><h1>Live report</h1><p id="lvSub">Drop any Transact export to see it live: Blue Wall, Harvest, cafes or any other location, with or without costs.</p></div>
+        <div class="actions">
+          <button class="btn ghost" id="lvPdf" type="button" disabled><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>PDF summary</button>
+          <button class="btn primary" id="lvXlsx" type="button" disabled><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Excel</button>
         </div>
-        <div class="tscroll"><table class="data" id="exTable"></table></div>
-        <div class="more" id="exMore" hidden></div>
       </div>
 
-      <div class="box">
-        <h3>Data checks <span class="badges" id="exBadges"></span></h3>
-        <div class="flags" id="exFlags"><p class="hint">Every file is reconciled against the register totals when it’s added. Anything that doesn’t tie out shows here.</p></div>
+      <div class="card2 hero" id="lvEmpty">
+        <label class="dropbig" id="lvDrop" for="lvIn">
+          <input class="sr-file" type="file" id="lvIn" accept=".xls,.xlsx,.csv" multiple>
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 31V9M15 18l9-9 9 9"/><path d="M8 30v8a2 2 0 002 2h28a2 2 0 002-2v-8"/></svg>
+          <h2>Drop your exports here</h2>
+          <p>Any number of files at once. Each one is checked against its register totals before anything is shown.</p>
+          <span class="btn primary">Choose files</span>
+        </label>
+        <aside>
+          <h3>What it reads</h3>
+          <ul class="knows">
+            <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><b>Item Sales Detail</b> for any shift, day or week, with add-ons.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><b>Item Sales Summary with Cost</b>, which carries the POS cost and margin.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><b>Your own cost list</b> (.xlsx, .xls or .csv), matched by item number or name.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span><b>Blue Wall, Harvest, all cafes</b> and any new location. Mix them freely.</span></li>
+          </ul>
+          <label class="toggle"><input type="checkbox" id="lvRemember" checked> Remember each day for forecasting</label>
+        </aside>
       </div>
-      <div class="box">
-        <h3>Location names <small>which sales categories belong to which location</small></h3>
-        <p class="hint">New locations are grouped by the first word of their category. Rename any of them here. Your names are remembered in this browser.</p>
-        <div class="mapgrid" id="exMap"></div>
-        <datalist id="exLocNames"></datalist>
-        <div class="actions"><button class="ghost" id="exMapApply" type="button" disabled>Apply names</button><button class="ghost" id="exMapReset" type="button">Reset to default</button></div>
+
+      <div id="lvLoaded" hidden>
+        <div class="view" style="gap:14px">
+          <div class="card2 filestrip" id="lvFiles"></div>
+          <div class="filterbar">
+            <div class="pop"><button class="chip" type="button" id="fbDaysBtn" aria-expanded="false" aria-controls="fbDays"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="fbDaysTxt">All days</span></button>
+              <div class="panel" id="fbDays" hidden><div class="linkrow"><button class="link" type="button" data-all="files">Select all</button><button class="link" type="button" data-none="files">Clear</button></div><div class="scroller" id="fbDaysList"></div></div></div>
+            <div class="pop"><button class="chip" type="button" id="fbLocsBtn" aria-expanded="false" aria-controls="fbLocs"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0114 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span id="fbLocsTxt">All locations</span></button>
+              <div class="panel" id="fbLocs" hidden><input class="text" id="fbLocFind" type="search" placeholder="Find a location…" aria-label="Find a location">
+                <div class="linkrow"><button class="link" type="button" data-all="locs">Select all</button><button class="link" type="button" data-none="locs">Clear</button><button class="link" type="button" id="fbOnly">Only matches</button></div>
+                <div class="scroller" id="fbLocsList"></div></div></div>
+            <div class="seg" id="fbMetric" role="group" aria-label="Measure"></div>
+            <div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input id="fbSearch" type="search" placeholder="Search items by name or item #" aria-label="Search items" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="fbSugg">
+              <div class="sugg" id="fbSugg" role="listbox" hidden></div></div>
+          </div>
+
+          <div class="kpis" id="lvKpis"></div>
+
+          <div class="charts">
+            <div class="card2 chartcard"><div class="hd"><h2 id="chLocT">By location</h2></div><div class="bd"><div class="cv"><canvas id="chLoc" aria-label="Chart by location"></canvas></div></div></div>
+            <div class="card2 chartcard"><div class="hd"><h2 id="chItemT">Top 10 items</h2></div><div class="bd"><div class="cv"><canvas id="chItem" aria-label="Top items chart"></canvas></div></div></div>
+            <div class="card2 chartcard"><div class="hd"><h2 id="chMixT">Category mix</h2><span class="sub" id="chMixS"></span></div><div class="bd"><div class="cv"><canvas id="chMix" aria-label="Category mix chart"></canvas></div></div></div>
+            <div class="card2 chartcard"><div class="hd"><h2 id="chTimeT">Over time</h2><span class="sub" id="chTimeS"></span></div><div class="bd"><div class="cv"><canvas id="chTime" aria-label="Sales over time chart"></canvas><div class="chartnote" id="chTimeNote" hidden></div></div></div></div>
+          </div>
+
+          <div class="card2">
+            <div class="hd"><h2 id="tbT">Breakdown</h2><div class="seg" id="fbGroup" role="group" aria-label="Group by"></div></div>
+            <div class="bd" style="padding:8px 0 0"><div class="tscroll"><table class="data" id="lvTable"></table></div></div>
+            <div class="more" id="lvMore" hidden></div>
+          </div>
+
+          <div class="twocol">
+            <details class="card2 fold" id="dqFold" open><summary><span>Data checks <span class="badges" id="dqBadges"></span></span></summary><div class="bd"><div class="flags" id="dqFlags"></div></div></details>
+            <details class="card2 fold"><summary>Location names</summary><div class="bd" style="display:grid;gap:10px">
+              <p class="hint">New locations are named from their POS category. Rename any of them here; your names are remembered in this browser.</p>
+              <div class="mapgrid" id="mapGrid"></div><datalist id="mapNames"></datalist>
+              <div class="actions"><button class="btn ghost" id="mapApply" type="button" disabled>Apply names</button><button class="btn ghost" id="mapReset" type="button">Reset</button></div>
+              <div id="colPick" hidden></div></div></details>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
-</main>
+    </section>
 
-<script>
-(() => {
-  const $ = (id) => document.getElementById(id);
-  const money = (v) => (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const money0 = (v) => (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString('en-US', { maximumFractionDigits: 0 });
-  const num = (v) => Math.round(v).toLocaleString('en-US');
-  const pct = (v) => (v * 100).toFixed(1) + '%';
-  const METRICS = [['sales', 'Sales'], ['units', 'Units'], ['avg', 'Avg price'], ['addon', 'Add-on sales'], ['cost', 'Cost'], ['profit', 'Gross profit'], ['margin', 'Margin']];
-  const GROUPS = [['location', 'Location'], ['item', 'Item'], ['category', 'Category'], ['group', 'Menu group'], ['day', 'Day & shift']];
-  const COSTM = new Set(['cost', 'profit', 'margin']);
-  const S = { sales: [], cost: null, costOverride: null, data: null, fids: new Set(), locs: new Set(), metric: 'sales', group: 'location',
-              q: '', sort: null, sortDir: -1, showAll: false, seq: 0, mapping: {} };
-  try { S.mapping = JSON.parse(localStorage.getItem('sr_locmap') || '{}') || {}; } catch (e) { S.mapping = {}; }
-  let E = null;
-  document.addEventListener('engine-ready', () => { E = window.__engine; $('exSearch').disabled = false; if (S.sales.length) reload(); });
+    <!-- ================= FORECAST ================= -->
+    <section class="view" id="view-forecast" hidden>
+      <div class="pagehead">
+        <div><h1>Forecast</h1><p>Learns from the days stored in History and predicts the next trading days by location and shift, with a prep list for tomorrow.</p></div>
+        <div class="actions">
+          <button class="btn ghost" id="fcPdf" type="button" disabled><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>PDF summary</button>
+          <button class="btn primary" id="fcXlsx" type="button" disabled><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Excel</button>
+        </div>
+      </div>
+      <div class="card2"><div class="bd statgrid">
+        <div style="display:grid;gap:12px">
+          <span class="eyebrow">History available</span>
+          <div class="bignum" id="fcDays">0 <small>trading days</small></div>
+          <div class="progress" aria-hidden="true"><i id="fcBar" style="width:0%"></i></div>
+          <p class="hint" id="fcStatus">Load daily exports in Live report, or import a history backup, to start.</p>
+          <div class="actions"><button class="btn primary" id="fcGo" type="button" disabled><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>Generate forecast</button><span class="hint" id="fcGoNote"></span></div>
+        </div>
+        <div class="opts">
+          <label class="f">Forecast for<select class="text" id="fcScope"></select></label>
+          <label class="f">How far ahead<select class="text" id="fcHorizon"><option value="5">Next 5 trading days</option><option value="10">Next 10 trading days</option></select></label>
+          <div><span class="eyebrow">Unusual days</span><p class="hint" style="margin:2px 0 6px">Days far below normal are left out of training. Tick to include one anyway.</p><div class="unusual" id="fcUnusual"><p class="hint">None found yet.</p></div></div>
+        </div>
+      </div></div>
 
-  // ---------- tabs
-  function showTab(t) {
-    for (const b of document.querySelectorAll('[data-tab]')) b.setAttribute('aria-selected', String(b.dataset.tab === t));
-    $('tab-shift').hidden = t !== 'shift'; $('tab-explore').hidden = t !== 'explore';
-    try { if ((location.hash.slice(1) || 'shift') !== t) history.replaceState(null, '', t === 'shift' ? location.pathname + location.search : '#explore'); } catch (e) {}
-  }
-  for (const b of document.querySelectorAll('[data-tab]')) b.onclick = () => showTab(b.dataset.tab);
-  window.addEventListener('hashchange', () => showTab(location.hash === '#explore' ? 'explore' : 'shift'));
-  if (location.hash === '#explore') showTab('explore');
+      <div id="fcOut" hidden style="display:grid;gap:18px">
+        <div class="kpis" id="fcKpis"></div>
+        <div class="card2 chartcard"><div class="hd"><h2>Daily sales: actual and forecast</h2><span class="sub">shaded band = forecast range</span></div><div class="bd"><div class="cv tall"><canvas id="chFc" aria-label="Forecast chart"></canvas></div></div></div>
+        <div class="card2"><div class="hd"><h2>By location</h2><span class="sub" id="fcLocSub"></span></div><div class="bd" style="padding:8px 0 0"><div class="tscroll"><table class="data" id="fcTable"></table></div></div></div>
+        <div class="card2"><div class="hd"><h2 id="fcPrepT">Prep list</h2><select class="text" id="fcPrepLoc" style="width:auto" aria-label="Prep list location"></select></div><div class="bd" style="padding:8px 0 0"><div class="tscroll"><table class="data" id="fcPrep"></table></div></div></div>
+        <p class="note" id="fcNote"></p>
+      </div>
+    </section>
 
-  // ---------- uploads
-  const toFS = async (f, tag) => {
-    const ext = (f.name.match(/\.(xlsx|xls|csv)$/i) || ['', 'xls'])[1].toLowerCase();
-    return { id: tag + (S.seq++), name: f.name, path: '/tmp/ex/' + tag + S.seq + '.' + ext, bytes: new Uint8Array(await f.arrayBuffer()) };
-  };
-  async function addSales(list) {
-    const ok = [...list].filter((f) => /\.xlsx?$/i.test(f.name));
-    for (const f of ok) S.sales.push(await toFS(f, 's'));
-    renderUploads(); if (E) reload();
-  }
-  async function addCost(list) {
-    const f = [...list].find((x) => /\.(xlsx|xls|csv)$/i.test(x.name)); if (!f) return;
-    S.cost = await toFS(f, 'c'); S.costOverride = null; renderUploads(); if (E && S.sales.length) reload();
-  }
-  function renderUploads() {
-    const li = (f, rm) => { const el = document.createElement('li'); el.className = 'file';
-      const w = document.createElement('span'); w.className = 'what'; w.textContent = f.label || f.name;
-      const a = document.createElement('span'); a.className = 'amt'; a.textContent = f.amt || '';
-      const x = document.createElement('button'); x.className = 'x'; x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Remove ' + f.name); x.onclick = rm;
-      const fn = document.createElement('span'); fn.className = 'fn'; fn.textContent = f.label ? f.name : '';
-      el.append(w, a, x, fn); return el; };
-    const byName = new Map((S.data?.files || []).map((f) => [f.name, f]));
-    $('exListSales').replaceChildren(...S.sales.map((f) => { const i = byName.get(f.name);
-      return li({ name: f.name, label: i ? i.label : '', amt: i ? money(i.sales) : '' }, () => { S.sales = S.sales.filter((g) => g !== f); renderUploads(); reload(); }); }));
-    $('exListCost').replaceChildren(...(S.cost ? [li({ name: S.cost.name, label: S.data?.cost?.ok ? (S.data.cost.entries + ' items with a cost') : '', amt: '' },
-      () => { S.cost = null; S.costOverride = null; $('exColPick').hidden = true; renderUploads(); reload(); })] : []));
-  }
-  function wire(drop, input, fn) {
-    $(input).addEventListener('change', (e) => { fn(e.target.files); e.target.value = ''; });
-    const d = $(drop);
-    d.addEventListener('dragover', (e) => { e.preventDefault(); d.classList.add('over'); });
-    d.addEventListener('dragleave', () => d.classList.remove('over'));
-    d.addEventListener('drop', (e) => { e.preventDefault(); d.classList.remove('over'); fn(e.dataTransfer.files); });
-  }
-  wire('exDropSales', 'exInSales', addSales); wire('exDropCost', 'exInCost', addCost);
+    <!-- ================= EXCEL REPORTS (built-in report formats) ================= -->
+    <section class="view" id="view-reports" hidden>
+      <div class="pagehead"><div><h1>Excel reports</h1><p>The standard report formats: Blue Wall Morning and Evening shifts, Harvest weekly, and Sales &amp; Margin for any “with Cost” export.</p></div></div>
+      <ol class="steps">
+        <li><b>Exports to report on.</b> Morning and Evening together is fine; they become separate reports. A station-only export (like Yum Bakery) is merged into its shift.</li>
+        <li><b>Comparison exports</b> (optional). The previous trading day or the same day last week. Each shift is matched to its shift.</li>
+        <li><b>Build, then download.</b> Every report is reconciled to the register before it is built.</li>
+      </ol>
+      <section class="trays">
+        <div class="tray">
+          <h2>Exports to report on <small>Item Sales Detail, Harvest weekly or Item Sales Summary with Cost</small></h2>
+          <label class="drop" id="dropCur" for="inCur"><input type="file" id="inCur" accept=".xls,.xlsx" multiple><span><strong>Choose files</strong> or drop them here</span></label>
+          <ul class="files" id="listCur"></ul>
+        </div>
+        <div class="tray">
+          <h2>Compare with <small>optional</small></h2>
+          <label class="drop" id="dropPrev" for="inPrev"><input type="file" id="inPrev" accept=".xls,.xlsx" multiple><span><strong>Choose files</strong> or drop them here</span></label>
+          <ul class="files" id="listPrev"></ul>
+          <p class="hint">Without these the reports still build; the comparison columns show “–”.</p>
+        </div>
+      </section>
+      <div class="actions"><button class="primary" id="build" disabled>Build reports</button><span class="status" id="status">Add at least one export to start.</span></div>
+      <section class="results" id="results" hidden>
+        <div class="actions" style="justify-content:space-between"><h2>Reports</h2><button class="ghost" id="saveAll" hidden>Download all (.zip)</button></div>
+        <div id="cards" class="results"></div>
+      </section>
+      <footer class="fine">If the item totals don’t match the register’s category totals and grand total, the file is refused with the reason.</footer>
+    </section>
 
-  // ---------- load through Python
-  function reload() {
-    if (!E) return;
-    if (!S.sales.length) { S.data = null; renderAll(); return; }
-    const py = E.py; py.FS.mkdirTree('/tmp/ex');
-    for (const f of S.sales) py.FS.writeFile(f.path, f.bytes);
-    if (S.cost) py.FS.writeFile(S.cost.path, S.cost.bytes);
-    py.globals.set('_ex_sales', JSON.stringify(S.sales.map((f) => ({ path: f.path, name: f.name }))));
-    py.globals.set('_ex_cost', S.cost ? S.cost.path : null);
-    py.globals.set('_ex_over', S.costOverride ? JSON.stringify(S.costOverride) : null);
-    py.globals.set('_ex_map', JSON.stringify(S.mapping));
-    const prevF = S.data ? new Set(S.data.files.map((f) => f.name)) : null;
-    const prevL = S.data ? new Set(S.data.locations.map((l) => l.name)) : null;
-    try {
-      S.data = JSON.parse(py.runPython('explore.load(_ex_sales, _ex_cost, _ex_over, _ex_map)'));
-    } catch (e) { console.error(e); S.data = null; $('exFlags').textContent = 'These files could not be read. Check that they are Item Sales Detail exports.'; return; }
-    // keep the viewer's choices where they still apply; new files and locations start selected
-    const fidsByName = new Map(S.data.files.map((f) => [f.name, f.id]));
-    const keepF = new Set([...S.fids].map((id) => S.lastFiles?.[id]).filter(Boolean));
-    S.fids = new Set(S.data.files.filter((f) => !prevF || !prevF.has(f.name) || keepF.has(f.name)).map((f) => f.id));
-    S.lastFiles = Object.fromEntries(S.data.files.map((f) => [f.id, f.name]));
-    const names = S.data.locations.map((l) => l.name);
-    S.locs = new Set(names.filter((n) => !prevL || !prevL.has(n) || S.locs.has(n)));
-    if (!S.data.has_cost && COSTM.has(S.metric)) S.metric = 'sales';
-    renderUploads(); renderAll();
-  }
+    <!-- ================= HISTORY ================= -->
+    <section class="view" id="view-history" hidden>
+      <div class="pagehead">
+        <div><h1>History</h1><p>Every day loaded in Live report is kept here for forecasting. It lives in this browser only; save a backup to move it to another computer.</p></div>
+        <div class="actions">
+          <label class="btn ghost" for="hsIn" style="position:relative"><input class="sr-file" type="file" id="hsIn" accept=".json,application/json"><svg viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M4 3h16"/></svg>Import backup</label>
+          <button class="btn primary" id="hsOut" type="button" disabled><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Save backup</button>
+        </div>
+      </div>
+      <div class="kpis" id="hsKpis"></div>
+      <div class="card2"><div class="hd"><h2>Stored days</h2><span class="sub">click a day to remove it</span></div><div class="bd" style="padding:8px 0 0"><div class="tscroll"><table class="data" id="hsTable"></table></div></div></div>
+      <div class="actions"><button class="btn danger" id="hsClear" type="button" disabled>Clear all history</button><span class="hint" id="hsClearNote"></span></div>
+    </section>
+  </div>
+</div>
 
-  // ---------- aggregation (mirrors explore.py export exactly)
-  function rowsInView() {
-    if (!S.data) return [];
-    const q = S.q.trim().toLowerCase();
-    return S.data.rows.filter((r) => S.fids.has(r[0]) && S.locs.has(r[1]) && (!q || r[5].toLowerCase().includes(q) || String(r[4]).toLowerCase().includes(q)));
-  }
-  const labelOf = (fid) => S.data.files.find((f) => f.id === fid)?.label || '';
-  function keyOf(r) { return { location: r[1], item: r[5], category: r[2], group: r[3] || '(none)', day: labelOf(r[0]) }[S.group]; }
-  function agg(rows) {
-    const t = { sales: 0, units: 0, addon: 0, cost: 0, profit: 0, costed: 0, n: 0 };
-    for (const r of rows) {
-      t.sales += r[7]; t.units += r[6]; t.addon += r[8]; t.n++;
-      if (r[9] !== null && r[9] !== undefined) { const c = r[6] * r[9] + (r[10] || 0); t.cost += c; t.profit += r[7] - c; t.costed += r[7]; }
-    }
-    t.avg = t.units ? t.sales / t.units : 0; t.margin = t.costed ? t.profit / t.costed : null; t.coverage = t.sales ? t.costed / t.sales : 0;
-    return t;
-  }
-  function groups(rows) {
-    const m = new Map();
-    for (const r of rows) { const k = keyOf(r); if (!m.has(k)) m.set(k, { key: k, rows: [], locs: new Set(), nos: new Set() }); const g = m.get(k); g.rows.push(r); g.locs.add(r[1]); if (r[4]) g.nos.add(r[4]); }
-    return [...m.values()].map((g) => Object.assign(g, agg(g.rows)));
-  }
-  const mv = (g, m) => (m === 'margin' ? (g.margin ?? -Infinity) : (m === 'cost' || m === 'profit') && !g.costed ? -Infinity : g[m]);
-  // descending by default; groups with no value (no cost) always go last
-  function cmp(a, b, m) {
-    const va = mv(a, m), vb = mv(b, m);
-    if (va === vb) return 0; if (va === -Infinity) return 1; if (vb === -Infinity) return -1;
-    return S.sortDir < 0 ? vb - va : va - vb;
-  }
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dwTitle">
+  <div class="dh"><h2 id="dwTitle">Item</h2><p id="dwSub"></p><button type="button" id="dwClose" aria-label="Close">×</button></div>
+  <div class="db" id="dwBody"></div>
+</aside>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="busy" id="busy" hidden><div><span class="spin"></span><span id="busyTxt">Working…</span></div></div>
 
-  // ---------- render
-  function renderAll() { renderFilters(); renderView(); renderFlags(); renderMap(); renderColPick(); }
-  function renderFilters() {
-    const d = S.data;
-    $('exFiles').replaceChildren(...(d ? [...d.files].sort((a, b) => a.sort.localeCompare(b.sort)).map((f) => chk(f.label, money0(f.sales), S.fids.has(f.id), (on) => { on ? S.fids.add(f.id) : S.fids.delete(f.id); renderView(); }, !f.reconciled ? 'check totals' : ''))
-      : [Object.assign(document.createElement('p'), { className: 'hint', textContent: 'Add sales exports to begin.' })]));
-    renderLocs();
-    const hasCost = !!d?.has_cost;
-    $('exMetric').replaceChildren(...METRICS.map(([k, lab]) => seg(lab, S.metric === k, () => { S.metric = k; S.sort = null; renderFilters(); renderView(); }, COSTM.has(k) && !hasCost, COSTM.has(k) && !hasCost ? 'Add a cost list to use this' : '')));
-    $('exGroup').replaceChildren(...GROUPS.map(([k, lab]) => seg(lab, S.group === k, () => { S.group = k; S.sort = null; S.showAll = false; renderFilters(); renderView(); })));
-  }
-  function renderLocs() {
-    const d = S.data; const f = $('exLocSearch').value.trim().toLowerCase();
-    const list = d ? d.locations.filter((l) => !f || l.name.toLowerCase().includes(f) || l.cats.some((c) => c.toLowerCase().includes(f))) : [];
-    $('exLocs').replaceChildren(...list.map((l) => chk(l.name, money0(l.sales), S.locs.has(l.name), (on) => { on ? S.locs.add(l.name) : S.locs.delete(l.name); $('exLocCount').textContent = countTxt(); renderView(); }, l.guessed ? 'check name' : '')));
-    $('exLocCount').textContent = d ? countTxt() : '';
-  }
-  const countTxt = () => `${S.locs.size} of ${S.data.locations.length} selected`;
-  function chk(label, val, on, fn, warn) {
-    const l = document.createElement('label'); l.className = 'chk';
-    const i = document.createElement('input'); i.type = 'checkbox'; i.checked = on; i.onchange = () => fn(i.checked);
-    const t = document.createElement('span'); t.textContent = label;
-    if (warn) { const w = document.createElement('span'); w.className = 'warn'; w.textContent = warn; t.append(w); }
-    const v = document.createElement('span'); v.className = 'v'; v.textContent = val;
-    l.append(i, t, v); return l;
-  }
-  function seg(label, on, fn, disabled, title) {
-    const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.setAttribute('aria-pressed', String(on)); b.disabled = !!disabled; if (title) b.title = title; b.onclick = fn; return b;
-  }
-  document.addEventListener('click', (e) => {
-    const t = e.target.closest('[data-all],[data-none]'); if (!t || !S.data) return;
-    const all = t.hasAttribute('data-all'); const which = t.dataset.all || t.dataset.none;
-    if (which === 'files') S.fids = new Set(all ? S.data.files.map((f) => f.id) : []);
-    else { const f = $('exLocSearch').value.trim().toLowerCase(); const names = S.data.locations.filter((l) => !f || l.name.toLowerCase().includes(f) || l.cats.some((c) => c.toLowerCase().includes(f))).map((l) => l.name);
-      names.forEach((n) => all ? S.locs.add(n) : S.locs.delete(n)); }
-    renderFilters(); renderView();
-  });
-  $('exOnlyShown').onclick = () => { if (!S.data) return; const f = $('exLocSearch').value.trim().toLowerCase();
-    S.locs = new Set(S.data.locations.filter((l) => !f || l.name.toLowerCase().includes(f) || l.cats.some((c) => c.toLowerCase().includes(f))).map((l) => l.name)); renderFilters(); renderView(); };
-  $('exLocSearch').addEventListener('input', renderLocs);
-  let qt; $('exSearch').addEventListener('input', (e) => { clearTimeout(qt); qt = setTimeout(() => { S.q = e.target.value; S.showAll = false; if (S.q && S.group !== 'item') { S.group = 'item'; renderFilters(); } renderView(); }, 120); });
-
-  function renderView() {
-    const rows = rowsInView(); const hasCost = !!S.data?.has_cost; const t = agg(rows);
-    const k = (lab, val, cls) => { const d = document.createElement('div'); d.className = 'kpi' + (cls ? ' ' + cls : '');
-      const s = document.createElement('span'); s.textContent = lab; const b = document.createElement('b'); b.textContent = val; d.append(s, b); return d; };
-    const cards = [k('Sales', money(t.sales)), k('Units sold', num(t.units)), k('Avg price', money(t.avg)), k('Add-on sales', money(t.addon))];
-    if (hasCost) cards.push(k('Cost', money(t.cost), 'cost'), k('Gross profit', money(t.profit), 'cost'), k('Margin', t.margin === null ? '–' : pct(t.margin), 'cost'), k('Sales with a cost', pct(t.coverage), 'cost'));
-    else cards.push(k('Cost & profit', 'Add a cost list to see these', 'cost off'));
-    $('exKpis').replaceChildren(...cards);
-    $('exExport').disabled = !rows.length;
-    const gl = GROUPS.find((g) => g[0] === S.group)[1]; const ml = METRICS.find((m) => m[0] === S.metric)[1];
-    if (!S.data) { $('exChart').innerHTML = '<div class="empty">Your chart appears here once sales exports are added.</div>'; $('exTable').replaceChildren(); $('exTableTitle').textContent = 'Breakdown'; $('exMore').hidden = true; return; }
-    if (!rows.length) { $('exChart').innerHTML = '<div class="empty">Nothing matches. Check the days, locations or search.</div>'; $('exTable').replaceChildren(); $('exMore').hidden = true; $('exTableTitle').textContent = 'No matches'; return; }
-    let gs = groups(rows);
-    const sortKey = S.sort || S.metric;
-    if (S.group === 'day' && !S.sort) gs.sort((a, b) => (S.data.files.find((f) => f.label === a.key)?.sort || '').localeCompare(S.data.files.find((f) => f.label === b.key)?.sort || ''));
-    else if (sortKey === 'key') gs.sort((a, b) => (S.sortDir < 0 ? 1 : -1) * a.key.localeCompare(b.key));
-    else gs.sort((a, b) => cmp(a, b, sortKey) || a.key.localeCompare(b.key));
-    // chart: top 15 by the chosen measure
-    const top = [...gs].filter((g) => mv(g, S.metric) !== -Infinity).sort((a, b) => mv(b, S.metric) - mv(a, S.metric)).slice(0, 15);
-    $('exChartTitle').textContent = `${gs.length > 15 ? 'Top 15 ' : ''}${gl === 'Day & shift' ? 'Days & shifts' : gl + 's'} by ${ml.toLowerCase()}`;
-    drawChart(top, S.metric);
-    // table
-    $('exTableTitle').textContent = `${gs.length.toLocaleString()} ${gl === 'Day & shift' ? 'day/shift' : gl.toLowerCase()}${gs.length === 1 ? '' : 's'}` + (S.q ? ` matching “${S.q.trim()}”` : '');
-    const cols = [['key', gl], ['sales', 'Sales'], ['units', 'Units'], ['avg', 'Avg price'], ['addon', 'Add-ons']].concat(hasCost ? [['cost', 'Cost'], ['profit', 'Gross profit'], ['margin', 'Margin']] : []).concat([['share', 'Share']]);
-    const thead = document.createElement('thead'); const hr = document.createElement('tr');
-    for (const [c, lab] of cols) { const th = document.createElement('th'); th.textContent = lab; th.tabIndex = 0;
-      if ((S.sort || S.metric) === c && c !== 'share') th.setAttribute('aria-sort', S.sortDir < 0 ? 'descending' : 'ascending');
-      const go = () => { if (c === 'share') { S.sort = 'sales'; } else if ((S.sort || S.metric) === c) S.sortDir *= -1; else { S.sort = c; S.sortDir = c === 'key' ? 1 : -1; } renderView(); };
-      th.onclick = go; th.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; hr.append(th); }
-    thead.append(hr);
-    const tb = document.createElement('tbody'); const limit = S.showAll ? gs.length : 200;
-    const fmt = { sales: money, units: num, avg: money, addon: money, cost: money, profit: money };
-    const row = (g, isTot) => { const tr = document.createElement('tr'); if (isTot) tr.className = 'total';
-      for (const [c] of cols) { const td = document.createElement('td');
-        if (c === 'key') { td.textContent = isTot ? 'Total' : g.key;
-          if (!isTot && S.group === 'item') { const s = document.createElement('span'); s.className = 'subt'; s.textContent = [...g.locs].join(', ') + (g.nos.size ? ' · #' + [...g.nos].join(', #') : ''); td.append(s); } }
-        else if (c === 'margin') { if (g.margin === null) { td.textContent = '–'; td.className = 'na'; } else td.textContent = pct(g.margin); }
-        else if (c === 'share') td.textContent = pct(t.sales ? g.sales / t.sales : 0);
-        else if ((c === 'cost' || c === 'profit') && !g.costed) { td.textContent = '–'; td.className = 'na'; }
-        else td.textContent = fmt[c](g[c]);
-        tr.append(td); }
-      return tr; };
-    gs.slice(0, limit).forEach((g) => tb.append(row(g)));
-    tb.append(row(t, true));
-    $('exTable').replaceChildren(thead, tb);
-    if (gs.length > limit) { $('exMore').hidden = false; $('exMore').replaceChildren(document.createTextNode(`Showing 200 of ${gs.length.toLocaleString()}. The download includes all of them.`));
-      const b = document.createElement('button'); b.className = 'ghost'; b.type = 'button'; b.textContent = 'Show all'; b.onclick = () => { S.showAll = true; renderView(); }; $('exMore').append(b); }
-    else $('exMore').hidden = true;
-  }
-
-  function drawChart(gs, m) {
-    const fmt = m === 'units' ? num : m === 'margin' ? pct : (m === 'avg' ? money : money0);
-    const vals = gs.map((g) => mv(g, m)); const maxV = Math.max(0, ...vals); const minV = Math.min(0, ...vals);
-    const W = 760, LW = 210, VW = 90, BH = 22, GAP = 8, H = gs.length * (BH + GAP) + 8;
-    const span = (maxV - minV) || 1; const x0 = LW + ((0 - minV) / span) * (W - LW - VW);
-    const sx = (v) => ((v - 0) / span) * (W - LW - VW);
-    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    const trunc = (s) => (s.length > 30 ? s.slice(0, 29) + '…' : s);
-    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bar chart">`;
-    svg += `<line x1="${x0}" x2="${x0}" y1="0" y2="${H - 4}" stroke="var(--line)" />`;
-    gs.forEach((g, i) => { const v = vals[i]; const y = 4 + i * (BH + GAP); const w = Math.abs(sx(v)); const x = v >= 0 ? x0 : x0 - w;
-      svg += `<text x="${LW - 10}" y="${y + BH / 2 + 4}" text-anchor="end" font-size="12" fill="var(--ink)">${esc(trunc(g.key))}</text>`;
-      svg += `<rect x="${x}" y="${y}" width="${Math.max(1, w)}" height="${BH}" rx="3" fill="${v >= 0 ? 'var(--teal)' : 'var(--down)'}"><title>${esc(g.key)}: ${esc(fmt(v))}</title></rect>`;
-      svg += `<text x="${v >= 0 ? x + w + 6 : x0 + 6}" y="${y + BH / 2 + 4}" font-size="11.5" font-family="var(--f-num)" fill="var(--muted)">${esc(fmt(v))}</text>`; });
-    $('exChart').innerHTML = svg + '</svg>';
-  }
-
-  function renderFlags() {
-    const fl = S.data?.flags || [];
-    const cnt = { error: 0, warning: 0, info: 0 }; fl.forEach((f) => cnt[f.level]++);
-    const names = { error: 'fix first', warning: 'check', info: 'FYI' };
-    $('exBadges').replaceChildren(...Object.entries(cnt).filter(([, n]) => n).map(([k, n]) => { const s = document.createElement('span'); s.className = 'lvl ' + k; s.textContent = n + ' ' + names[k]; return s; }));
-    if (!S.data) return;
-    if (!fl.length) { $('exFlags').replaceChildren(Object.assign(document.createElement('p'), { className: 'hint', textContent: 'Every file ties to its register totals, with no duplicates, overlaps or cost problems found.' })); return; }
-    $('exFlags').replaceChildren(...fl.map((f) => { const d = document.createElement('details'); d.className = 'flag ' + f.level;
-      const s = document.createElement('summary'); const l = document.createElement('span'); l.className = 'lvl ' + f.level; l.textContent = names[f.level];
-      const tx = document.createElement('span'); tx.textContent = `${f.area}: ${f.text}`; s.append(l, tx); d.append(s);
-      if (f.items.length) { const ul = document.createElement('ul'); f.items.forEach((it) => ul.append(Object.assign(document.createElement('li'), { textContent: it })));
-        if (f.more) ul.append(Object.assign(document.createElement('li'), { textContent: `…and ${f.more} more (all listed in the download)` })); d.append(ul); }
-      else s.style.cursor = 'default';
-      return d; }));
-  }
-
-  function renderMap() {
-    const d = S.data; if (!d) { $('exMap').replaceChildren(); return; }
-    $('exLocNames').replaceChildren(...[...new Set(d.locations.map((l) => l.name))].map((n) => Object.assign(document.createElement('option'), { value: n })));
-    const cats = [...d.catmap].sort((a, b) => (b.guessed - a.guessed) || a.location.localeCompare(b.location) || a.category.localeCompare(b.category));
-    $('exMap').replaceChildren(...cats.map((c) => { const r = document.createElement('div'); r.className = 'maprow' + (c.guessed ? ' guess' : '');
-      const n = document.createElement('div'); n.className = 'cat'; n.textContent = c.category; const sm = document.createElement('small'); sm.textContent = money0(c.sales); n.append(sm);
-      const i = document.createElement('input'); i.className = 'text'; i.value = c.location; i.setAttribute('list', 'exLocNames'); i.setAttribute('aria-label', 'Location for ' + c.category); i.dataset.cat = c.category;
-      i.addEventListener('input', () => { $('exMapApply').disabled = false; }); r.append(n, i); return r; }));
-    $('exMapApply').disabled = true;
-  }
-  $('exMapApply').onclick = () => {
-    for (const i of $('exMap').querySelectorAll('input[data-cat]')) { const v = i.value.trim(); if (v) S.mapping[i.dataset.cat] = v; }
-    try { localStorage.setItem('sr_locmap', JSON.stringify(S.mapping)); } catch (e) {}
-    reload();
-  };
-  $('exMapReset').onclick = () => { S.mapping = {}; try { localStorage.removeItem('sr_locmap'); } catch (e) {} reload(); };
-
-  function renderColPick() {
-    const c = S.data?.cost; const box = $('exColPick');
-    if (!c) { box.hidden = true; return; }
-    box.hidden = false; box.replaceChildren();
-    const note = document.createElement('p'); note.className = c.ok ? 'hint' : 'sample-note';
-    note.textContent = c.ok ? `Using “${c.headers[c.cols.cost] || 'cost'}” as the cost, matched on ${c.cols.item_no !== undefined ? '“' + c.headers[c.cols.item_no] + '”' : ''}${c.cols.item_no !== undefined && c.cols.name !== undefined ? ' then ' : ''}${c.cols.name !== undefined ? '“' + c.headers[c.cols.name] + '”' : ''}.${c.unused ? ` ${c.unused} cost items weren’t sold in these files.` : ''}` : c.error;
-    box.append(note);
-    const grid = document.createElement('div'); grid.className = 'colpick';
-    const pick = (lab, role) => { const l = document.createElement('label'); l.textContent = lab; const s = document.createElement('select'); s.className = 'text'; s.dataset.role = role;
-      s.append(Object.assign(document.createElement('option'), { value: '', textContent: '— none —' }));
-      c.headers.forEach((h, j) => { if (h) s.append(Object.assign(document.createElement('option'), { value: j, textContent: h })); });
-      s.value = c.cols[role] !== undefined ? c.cols[role] : ''; l.append(s); return l; };
-    grid.append(pick('Item number', 'item_no'), pick('Item name', 'name'), pick('Cost per unit', 'cost'));
-    const b = document.createElement('button'); b.className = 'ghost'; b.type = 'button'; b.textContent = 'Use these columns';
-    b.onclick = () => { const cols = {}; for (const s of grid.querySelectorAll('select')) if (s.value !== '') cols[s.dataset.role] = Number(s.value);
-      if (cols.cost === undefined || (cols.item_no === undefined && cols.name === undefined)) { note.className = 'sample-note'; note.textContent = 'Pick a cost column and at least one of item number or item name.'; return; }
-      S.costOverride = { header_row: c.header_row, cols }; reload(); };
-    box.append(grid, b);
-  }
-
-  $('exExport').onclick = async () => {
-    if (!E || !S.data) return;
-    const allL = S.locs.size === S.data.locations.length;
-    const sel = { fids: [...S.fids], locs: allL ? [] : [...S.locs], search: S.q.trim(), groupby: S.group, metric: S.metric };
-    const note = $('exSaved'); note.hidden = true;
-    try {
-      E.py.globals.set('_ex_sel', JSON.stringify(sel));
-      const r = JSON.parse(E.py.runPython('explore.export(_ex_sel)'));
-      await E.save(r.name, E.py.FS.readFile(r.file), note);
-    } catch (e) { console.error(e); note.textContent = 'This view could not be exported.'; note.hidden = false; }
-  };
-  renderView();
-})();
-</script>
-
-
+<script src="lib/chart.umd.js"></script>
+<script src="lib/jspdf.umd.min.js"></script>
 <script src="py/pyodide.js"></script>
 <script>
 (() => {
@@ -638,10 +542,10 @@ table.data td.na { color: var(--muted) }
       const app = (await bin('lib/app.b64.txt')).buffer;
       py.FS.mkdirTree('/home/pyodide/app');
       py.unpackArchive(app, 'zip', { extractDir: '/home/pyodide/app' });
-      py.runPython("import sys; sys.path.insert(0,'/home/pyodide/app'); import engine, explore");
+      py.runPython("import sys; sys.path.insert(0,'/home/pyodide/app'); import engine, explore, forecast");
       py.FS.mkdirTree('/tmp/in');
       state.py = py;
-      setEngine('ready', 'Ready');
+      setEngine('ready', 'Ready · works offline');
       window.__engine = { py, save };
       document.dispatchEvent(new Event('engine-ready'));
       await describeAll();
@@ -813,6 +717,755 @@ table.data td.na { color: var(--muted) }
 
 <script>
 (() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const money = (v) => (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const money0 = (v) => (v < 0 ? '−$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-US');
+  const num = (v) => Math.round(v).toLocaleString('en-US');
+  const pct = (v) => (v * 100).toFixed(1) + '%';
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const dLabel = (iso) => { const d = new Date(iso + 'T12:00:00'); return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); };
+
+  const BW = new Set(['Tamales', 'Deli', 'StarGinger', 'Tavola', 'ChefsTable', 'Wasabi', 'GreenFields', 'Grill', 'Peets Cafe', 'Yum Bakery', 'Peoples Organic', 'Scannables']);
+  const CAFES = new Set(['Argo', 'Courtside', 'Furcolo', 'Hampshire Cafe', 'ISB', 'ISOM', 'Library', 'Newman', 'Post Bean', 'Roots', 'Snack Overflow', 'Whitmore', 'Worcester Cafe', 'Cafe Scannables']);
+  const venueOf = (l) => (l === 'Harvest' || l === 'Harvest Scannables') ? 'Harvest' : BW.has(l) ? 'Blue Wall' : CAFES.has(l) ? 'Cafes' : 'Other';
+  const VENUES = ['Blue Wall', 'Cafes', 'Harvest', 'Other'];
+  const METRICS = [['sales', 'Sales'], ['units', 'Units'], ['avg', 'Avg price'], ['addon', 'Add-ons'], ['cost', 'Cost'], ['profit', 'Profit'], ['margin', 'Margin']];
+  const GROUPS = [['location', 'Location'], ['item', 'Item'], ['category', 'Category'], ['group', 'Menu group'], ['day', 'Day & shift'], ['venue', 'Venue']];
+  const COSTM = new Set(['cost', 'profit', 'margin']);
+  let E = null;
+
+  // ---------------------------------------------------------------- small UI helpers
+  let toastT;
+  function toast(msg, ms = 3200) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, ms); }
+  async function busy(msg, fn) { $('busyTxt').textContent = msg; $('busy').hidden = false; await new Promise((r) => setTimeout(r, 30));
+    try { return await fn(); } finally { $('busy').hidden = true; } }
+  function py(code, vars = {}) { for (const [k, v] of Object.entries(vars)) E.py.globals.set(k, v); return E.py.runPython(code); }
+  async function saveFile(name, bytes, mime) {
+    const note = el('span');
+    await E.save(name, bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes), note);
+    toast(note.textContent && note.textContent !== 'Saved' ? note.textContent : 'Saved ' + name);
+  }
+
+  // ---------------------------------------------------------------- history store (IndexedDB, this browser only)
+  const Store = {
+    db: null, mem: new Map(), ok: true,
+    open() { return new Promise((res) => { try { const r = indexedDB.open('sales-report-studio', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('records', { keyPath: 'id' });
+      r.onsuccess = () => { this.db = r.result; res(); }; r.onerror = () => { this.ok = false; res(); };
+    } catch (e) { this.ok = false; res(); } }); },
+    tx(mode) { return this.db.transaction('records', mode).objectStore('records'); },
+    all() { if (!this.db) return Promise.resolve([...this.mem.values()]);
+      return new Promise((res) => { const q = this.tx('readonly').getAll(); q.onsuccess = () => res(q.result || []); q.onerror = () => res([]); }); },
+    async upsert(recs) {
+      const cur = new Map((await this.all()).map((r) => [r.id, r])); let added = 0, updated = 0;
+      const put = [];
+      for (const r of recs) { const o = cur.get(r.id); if (!o) { added++; put.push(r); } else if (Math.abs(o.sales - r.sales) > 0.004 || o.units !== r.units) { updated++; put.push(r); } }
+      if (!this.db) put.forEach((r) => this.mem.set(r.id, r));
+      else await new Promise((res) => { const t = this.db.transaction('records', 'readwrite'); const s = t.objectStore('records'); put.forEach((r) => s.put(r)); t.oncomplete = res; t.onerror = res; });
+      return { added, updated };
+    },
+    async delWhere(fn) { const ids = (await this.all()).filter(fn).map((r) => r.id);
+      if (!this.db) ids.forEach((i) => this.mem.delete(i));
+      else await new Promise((res) => { const t = this.db.transaction('records', 'readwrite'); const s = t.objectStore('records'); ids.forEach((i) => s.delete(i)); t.oncomplete = res; t.onerror = res; });
+      return ids.length; },
+  };
+  const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+               set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+  let HIST = [];
+  async function refreshHistory() { HIST = await Store.all(); const days = new Set(HIST.map((r) => r.date)).size; $('navHist').textContent = days; return HIST; }
+
+  // ---------------------------------------------------------------- navigation
+  function show(view) {
+    for (const b of document.querySelectorAll('[data-view]')) b.toggleAttribute('aria-current', b.dataset.view === view), b.dataset.view === view && b.setAttribute('aria-current', 'page');
+    for (const v of ['live', 'forecast', 'reports', 'history']) $('view-' + v).hidden = v !== view;
+    try { history.replaceState(null, '', view === 'live' ? location.pathname + location.search : '#' + view); } catch (e) {}
+    if (view === 'forecast') fcStatus();
+    if (view === 'history') renderHistory();
+    if (view === 'live') setTimeout(() => charts.forEach((c) => c.resize()), 0);
+  }
+  for (const b of document.querySelectorAll('[data-view]')) b.onclick = () => show(b.dataset.view);
+  window.addEventListener('hashchange', () => { const h = location.hash.slice(1); show(['forecast', 'reports', 'history'].includes(h) ? h : 'live'); });
+
+  // ================================================================ LIVE REPORT
+  const S = { files: [], cost: null, bad: [], costOverride: null, data: null, fids: new Set(), locs: new Set(), metric: 'sales', group: 'location',
+              q: '', sort: null, sortDir: -1, showAll: false, seq: 0, mapping: LS.get('sr_locmap', {}), pending: [], lastFiles: {} };
+  $('lvRemember').checked = LS.get('srs_remember', true);
+  $('lvRemember').onchange = (e) => LS.set('srs_remember', e.target.checked);
+
+  async function addFiles(list) {
+    const ok = [...list].filter((f) => /\.(xlsx|xls|csv)$/i.test(f.name));
+    if (ok.length < [...list].length) toast('Only .xls, .xlsx and .csv files can be used.');
+    for (const f of ok) {
+      const ext = f.name.match(/\.(xlsx|xls|csv)$/i)[1].toLowerCase();
+      S.pending.push({ id: 'f' + (S.seq++), name: f.name, ext, bytes: new Uint8Array(await f.arrayBuffer()) });
+    }
+    if (E) await intake();
+    else { $('lvSub').textContent = 'Files added. The engine is still starting; they will open in a moment.'; }
+  }
+  async function intake() {
+    if (!S.pending.length) return;
+    const todo = S.pending.splice(0);
+    E.py.FS.mkdirTree('/tmp/lv');
+    for (const f of todo) { f.path = '/tmp/lv/' + f.id + '.' + f.ext; E.py.FS.writeFile(f.path, f.bytes); }
+    const cls = JSON.parse(py('explore.classify(_p)', { _p: JSON.stringify(todo.map((f) => ({ path: f.path, name: f.name }))) }));
+    cls.forEach((c, i) => { const f = todo[i]; f.kind = c.kind; f.label = c.label; f.detail = c.detail;
+      if (c.kind === 'pos') S.files.push(f); else if (c.kind === 'cost_list') { S.cost = f; S.costOverride = null; } else S.bad.push(f); });
+    if (cls.some((c) => c.kind === 'unknown')) toast('Some files weren’t recognised as Transact exports or cost lists.');
+    await reload();
+  }
+  async function reload() {
+    if (!E) return;
+    if (!S.files.length) { S.data = null; renderLive(); return; }
+    const prevF = S.data ? new Set(S.data.files.map((f) => f.name)) : null;
+    const prevL = S.data ? new Set(S.data.locations.map((l) => l.name)) : null;
+    const keepF = new Set([...S.fids].map((id) => S.lastFiles[id]).filter(Boolean));
+    await busy('Reading ' + S.files.length + ' export' + (S.files.length > 1 ? 's' : '') + '…', async () => {
+      try {
+        S.data = JSON.parse(py('explore.load(_s, _c, _o, _m)', { _s: JSON.stringify(S.files.map((f) => ({ path: f.path, name: f.name }))),
+          _c: S.cost ? S.cost.path : null, _o: S.costOverride ? JSON.stringify(S.costOverride) : null, _m: JSON.stringify(S.mapping) }));
+      } catch (e) { console.error(e); S.data = null; toast('These files could not be read.'); }
+    });
+    if (!S.data) { renderLive(); return; }
+    S.fids = new Set(S.data.files.filter((f) => !prevF || !prevF.has(f.name) || keepF.has(f.name)).map((f) => f.id));
+    S.lastFiles = Object.fromEntries(S.data.files.map((f) => [f.id, f.name]));
+    S.locs = new Set(S.data.locations.map((l) => l.name).filter((n) => !prevL || !prevL.has(n) || S.locs.has(n)));
+    if (!S.data.has_cost && COSTM.has(S.metric)) S.metric = 'sales';
+    if ($('lvRemember').checked) await remember();
+    renderLive();
+  }
+  async function remember() {
+    try {
+      const h = JSON.parse(py('explore.history_records()'));
+      const recs = h.records.filter((r) => r.reconciled).map((r) => { const o = Object.assign({}, r); delete o.reconciled; o.id = `${o.date}|${o.shift}|${o.loc}`; return o; });
+      if (!recs.length) return;
+      const { added, updated } = await Store.upsert(recs); await refreshHistory();
+      const days = new Set(recs.map((r) => r.date + ' ' + r.shift)).size;
+      if (added || updated) toast(`Saved ${days} day/shift${days > 1 ? 's' : ''} to History${updated ? ` (${updated} location${updated > 1 ? 's' : ''} updated)` : ''}.`);
+    } catch (e) { console.error(e); }
+  }
+
+  // ---------- aggregation (identical to the Excel export)
+  const fileById = (id) => S.data.files.find((f) => f.id === id);
+  function rowsInView(opts = {}) {
+    if (!S.data) return [];
+    const q = opts.ignoreSearch ? '' : S.q.trim().toLowerCase();
+    return S.data.rows.filter((r) => S.fids.has(r[0]) && S.locs.has(r[1]) && (!q || r[5].toLowerCase().includes(q) || String(r[4]).toLowerCase().includes(q)));
+  }
+  function keyOf(r, g = S.group) { return { location: r[1], item: r[5], category: r[2], group: r[3] || '(none)', day: fileById(r[0]).label, venue: venueOf(r[1]) }[g]; }
+  function agg(rows) {
+    const t = { sales: 0, units: 0, addon: 0, cost: 0, profit: 0, costed: 0, n: rows.length };
+    for (const r of rows) {
+      t.sales += r[7]; t.units += r[6]; t.addon += r[8];
+      if (r[9] !== null && r[9] !== undefined) { const c = r[6] * r[9] + (r[10] || 0); t.cost += c; t.profit += r[7] - c; t.costed += r[7]; }
+    }
+    t.avg = t.units ? t.sales / t.units : 0; t.margin = t.costed ? t.profit / t.costed : null; t.coverage = t.sales ? t.costed / t.sales : 0;
+    return t;
+  }
+  function groups(rows, g = S.group) {
+    const m = new Map();
+    for (const r of rows) { const k = keyOf(r, g); if (!m.has(k)) m.set(k, { key: k, rows: [], locs: new Set(), nos: new Set() });
+      const x = m.get(k); x.rows.push(r); x.locs.add(r[1]); if (r[4]) x.nos.add(r[4]); }
+    return [...m.values()].map((x) => Object.assign(x, agg(x.rows)));
+  }
+  const mv = (g, m) => (m === 'margin' ? (g.margin ?? -Infinity) : (m === 'cost' || m === 'profit') && !g.costed ? -Infinity : g[m]);
+  function cmp(a, b, m, dir) { const va = mv(a, m), vb = mv(b, m); if (va === vb) return 0; if (va === -Infinity) return 1; if (vb === -Infinity) return -1; return dir < 0 ? vb - va : va - vb; }
+  const fmtM = (m) => ({ sales: money, units: num, avg: money, addon: money, cost: money, profit: money, margin: (v) => v === null ? '–' : pct(v) }[m]);
+
+  // ---------- render live
+  function renderLive() {
+    const has = !!S.data; $('lvEmpty').hidden = has || !!S.files.length; $('lvLoaded').hidden = !has;
+    $('lvXlsx').disabled = $('lvPdf').disabled = !has;
+    if (!has) { $('lvSub').textContent = 'Drop any Transact export to see it live: Blue Wall, Harvest, cafes or any other location, with or without costs.'; return; }
+    const fs = S.data.files; const first = [...fs].sort((a, b) => a.sort.localeCompare(b.sort))[0], last = [...fs].sort((a, b) => a.sort.localeCompare(b.sort)).at(-1);
+    $('lvSub').textContent = `${fs.length} export${fs.length > 1 ? 's' : ''} · ${first.label}${fs.length > 1 ? ' to ' + last.label : ''} · ${S.data.locations.length} location${S.data.locations.length > 1 ? 's' : ''}`;
+    renderStrip(); renderFilters(); renderView(); renderFlags(); renderMap(); renderColPick();
+  }
+  function renderStrip() {
+    const box = $('lvFiles'); box.replaceChildren();
+    const byName = new Map((S.data?.files || []).map((f) => [f.name, f]));
+    const chip = (f, kind, label, onx, bad) => { const c = el('span', 'fchip' + (bad ? ' bad' : '')); c.title = f.name;
+      c.append(el('span', 'k' + (kind === 'cost list' ? ' cost' : ''), kind), el('b', '', label));
+      const x = el('button', '', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Remove ' + f.name); x.onclick = onx; c.append(x); return c; };
+    for (const f of S.files) { const i = byName.get(f.name);
+      box.append(chip(f, f.detail === 'Item Sales Summary with Cost' ? 'with cost' : 'sales', i ? `${i.label} · ${money0(i.sales)}` : f.label, async () => { S.files = S.files.filter((g) => g !== f); await reload(); }, i && !i.reconciled)); }
+    if (S.cost) box.append(chip(S.cost, 'cost list', S.data?.cost?.ok ? `${S.cost.name} · ${S.data.cost.entries} costs` : S.cost.name, async () => { S.cost = null; S.costOverride = null; await reload(); }));
+    for (const f of S.bad) box.append(chip(f, 'not read', f.name, () => { S.bad = S.bad.filter((g) => g !== f); renderStrip(); }, true));
+    const add = el('label', 'dropmini'); add.htmlFor = 'lvIn2';
+    const inp = el('input', 'sr-file'); inp.type = 'file'; inp.id = 'lvIn2'; inp.multiple = true; inp.accept = '.xls,.xlsx,.csv';
+    inp.onchange = (e) => { addFiles(e.target.files); e.target.value = ''; };
+    add.append(inp, document.createTextNode('+ Add files'));
+    wireDrop(add, addFiles);
+    const right = el('div', 'strip-right');
+    const tg = el('label', 'toggle'); const ti = el('input'); ti.type = 'checkbox'; ti.checked = $('lvRemember').checked;
+    ti.onchange = () => { $('lvRemember').checked = ti.checked; LS.set('srs_remember', ti.checked); if (ti.checked) remember(); };
+    tg.append(ti, document.createTextNode('Remember for forecasting'));
+    const clr = el('button', 'link', 'Clear all'); clr.type = 'button';
+    clr.onclick = () => { S.files = []; S.cost = null; S.bad = []; S.data = null; S.q = ''; $('fbSearch').value = ''; renderLive(); };
+    right.append(tg, clr); box.append(add, right);
+  }
+
+  // ---------- filters
+  function popToggle(btn, panel, open) {
+    const o = open ?? panel.hidden; document.querySelectorAll('.panel').forEach((p) => { p.hidden = true; }); document.querySelectorAll('.chip[aria-expanded]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+    panel.hidden = !o; btn.setAttribute('aria-expanded', String(o));
+  }
+  $('fbDaysBtn').onclick = (e) => { e.stopPropagation(); popToggle($('fbDaysBtn'), $('fbDays')); };
+  $('fbLocsBtn').onclick = (e) => { e.stopPropagation(); popToggle($('fbLocsBtn'), $('fbLocs')); if (!$('fbLocs').hidden) $('fbLocFind').focus(); };
+  document.addEventListener('click', (e) => { if (!e.target.closest('.pop')) document.querySelectorAll('.pop .panel').forEach((p) => { p.hidden = true; p.previousElementSibling.setAttribute('aria-expanded', 'false'); });
+    if (!e.target.closest('.search')) closeSugg(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { document.querySelectorAll('.pop .panel').forEach((p) => { p.hidden = true; }); closeSugg(); if (!$('drawer').hidden) closeDrawer(); } });
+
+  function chk(label, val, on, fn, warn) {
+    const l = el('label', 'chk'); const i = el('input'); i.type = 'checkbox'; i.checked = on; i.onchange = () => fn(i.checked);
+    const t = el('span', '', label); if (warn) t.append(el('span', 'warn', warn));
+    l.append(i, t, el('span', 'v', val)); return l;
+  }
+  function seg(box, items, cur, fn, disabledFn) {
+    box.replaceChildren(...items.map(([k, lab]) => { const b = el('button', '', lab); b.type = 'button'; b.setAttribute('aria-pressed', String(cur === k));
+      if (disabledFn && disabledFn(k)) { b.disabled = true; b.title = 'Add a cost list or a “with Cost” export to use this'; }
+      b.onclick = () => fn(k); return b; }));
+  }
+  function locMatches() { const f = $('fbLocFind').value.trim().toLowerCase(); return S.data.locations.filter((l) => !f || l.name.toLowerCase().includes(f) || l.cats.some((c) => c.toLowerCase().includes(f)) || venueOf(l.name).toLowerCase().includes(f)); }
+  function renderFilters() {
+    const d = S.data;
+    const files = [...d.files].sort((a, b) => a.sort.localeCompare(b.sort));
+    $('fbDaysList').replaceChildren(...files.map((f) => chk(f.label, money0(f.sales), S.fids.has(f.id), (on) => { on ? S.fids.add(f.id) : S.fids.delete(f.id); filtersChanged(); }, f.reconciled ? '' : 'check totals')));
+    $('fbDaysTxt').textContent = S.fids.size === d.files.length ? (d.files.length === 1 ? files[0].label : `All ${d.files.length} exports`) : `${S.fids.size} of ${d.files.length} exports`;
+    renderLocList();
+    seg($('fbMetric'), METRICS, S.metric, (k) => { S.metric = k; S.sort = null; renderFilters(); renderView(); }, (k) => COSTM.has(k) && !d.has_cost);
+    seg($('fbGroup'), GROUPS, S.group, (k) => { S.group = k; S.sort = null; S.showAll = false; renderFilters(); renderTable(rowsInView()); });
+  }
+  function renderLocList() {
+    const d = S.data; const list = locMatches(); const box = $('fbLocsList'); box.replaceChildren();
+    for (const v of VENUES) {
+      const ls = list.filter((l) => venueOf(l.name) === v); if (!ls.length) continue;
+      const g = el('div', 'grp'); g.append(el('span', '', `${v} · ${ls.length}`));
+      const tog = el('button', 'link', ls.every((l) => S.locs.has(l.name)) ? 'None' : 'All'); tog.type = 'button';
+      tog.onclick = () => { const all = !ls.every((l) => S.locs.has(l.name)); ls.forEach((l) => all ? S.locs.add(l.name) : S.locs.delete(l.name)); renderLocList(); filtersChanged(); };
+      g.append(tog); box.append(g);
+      ls.forEach((l) => box.append(chk(l.name, money0(l.sales), S.locs.has(l.name), (on) => { on ? S.locs.add(l.name) : S.locs.delete(l.name); updateLocTxt(); filtersChanged(); }, l.guessed ? 'check name' : '')));
+    }
+    if (!list.length) box.append(el('p', 'hint', 'No location matches.'));
+    updateLocTxt();
+  }
+  function updateLocTxt() { const n = S.data.locations.length; $('fbLocsTxt').textContent = S.locs.size === n ? `All ${n} location${n > 1 ? 's' : ''}` : S.locs.size === 1 ? [...S.locs][0] : `${S.locs.size} of ${n} locations`; }
+  $('fbLocFind').addEventListener('input', renderLocList);
+  $('fbOnly').onclick = () => { S.locs = new Set(locMatches().map((l) => l.name)); renderLocList(); filtersChanged(); };
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-all],[data-none]'); if (!t || !S.data) return;
+    const all = t.hasAttribute('data-all'); const which = t.dataset.all || t.dataset.none;
+    if (which === 'files') S.fids = new Set(all ? S.data.files.map((f) => f.id) : []);
+    else locMatches().forEach((l) => all ? S.locs.add(l.name) : S.locs.delete(l.name));
+    renderFilters(); renderView();
+  });
+  let fT; function filtersChanged() { clearTimeout(fT); fT = setTimeout(() => { renderFilters(); renderView(); }, 60); }
+
+  // ---------- search with suggestions
+  let suggIdx = -1, suggItems = [];
+  function closeSugg() { $('fbSugg').hidden = true; $('fbSearch').setAttribute('aria-expanded', 'false'); suggIdx = -1; }
+  function openSugg() {
+    const q = $('fbSearch').value.trim().toLowerCase(); if (!q || !S.data) { closeSugg(); return; }
+    const m = new Map();
+    for (const r of rowsInView({ ignoreSearch: true })) { if (!r[5].toLowerCase().includes(q) && !String(r[4]).toLowerCase().includes(q)) continue;
+      const x = m.get(r[5]) || { name: r[5], sales: 0, units: 0, locs: new Set(), nos: new Set() }; x.sales += r[7]; x.units += r[6]; x.locs.add(r[1]); if (r[4]) x.nos.add(r[4]); m.set(r[5], x); }
+    suggItems = [...m.values()].sort((a, b) => b.sales - a.sales);
+    const box = $('fbSugg'); box.replaceChildren();
+    if (!suggItems.length) { box.append(el('p', 'hint', 'No items match.')); }
+    else {
+      const all = el('button', 'all', `Show all ${suggItems.length} match${suggItems.length > 1 ? 'es' : ''} in the table`); all.type = 'button'; all.onclick = () => applySearch(); box.append(all);
+      suggItems.slice(0, 8).forEach((x, i) => { const b = el('button'); b.type = 'button'; b.setAttribute('role', 'option'); b.dataset.i = i;
+        b.append(el('b', '', x.name), el('span', 'num', money0(x.sales)), el('small', '', `${[...x.locs].slice(0, 3).join(', ')}${x.locs.size > 3 ? ' +' + (x.locs.size - 3) : ''} · ${num(x.units)} sold${x.nos.size ? ' · #' + [...x.nos][0] : ''}`));
+        b.onclick = () => { closeSugg(); openItem(x.name); }; box.append(b); });
+    }
+    box.hidden = false; $('fbSearch').setAttribute('aria-expanded', 'true');
+  }
+  function applySearch() { S.q = $('fbSearch').value; S.showAll = false; if (S.q && S.group !== 'item') S.group = 'item'; closeSugg(); renderFilters(); renderView(); }
+  let qT; $('fbSearch').addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(() => { openSugg(); if (!$('fbSearch').value.trim() && S.q) { S.q = ''; renderView(); } }, 90); });
+  $('fbSearch').addEventListener('keydown', (e) => {
+    const opts = [...$('fbSugg').querySelectorAll('button[data-i]')];
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!opts.length) return; suggIdx = (suggIdx + (e.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length; opts.forEach((o, i) => o.classList.toggle('on', i === suggIdx)); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (suggIdx >= 0 && opts[suggIdx]) opts[suggIdx].click(); else applySearch(); }
+  });
+  $('fbSearch').addEventListener('focus', openSugg);
+
+  // ---------- KPIs, charts, table
+  const charts = new Map();
+  function chart(id, cfg) { if (charts.has(id)) charts.get(id).destroy(); const c = new Chart($(id), cfg); charts.set(id, c); return c; }
+  const valueLabels = { id: 'valueLabels', afterDatasetsDraw(c, _a, opts) {
+    if (!opts || !opts.fmt) return; const { ctx } = c; ctx.save(); ctx.font = '600 11px ' + css('--f-num'); ctx.fillStyle = css('--muted');
+    c.data.datasets.forEach((ds, di) => { if (ds.type === 'line' || ds.noLabels) return; const meta = c.getDatasetMeta(di); if (meta.hidden) return;
+      meta.data.forEach((bar, i) => { const v = ds.data[i]; if (v === null || v === undefined) return; const horiz = c.options.indexAxis === 'y';
+        ctx.textAlign = horiz ? 'left' : 'center'; ctx.textBaseline = horiz ? 'middle' : 'bottom';
+        ctx.fillText(opts.fmt(v), horiz ? bar.x + 6 : bar.x, horiz ? bar.y : bar.y - 4); }); });
+    ctx.restore(); } };
+  const SHORT = { money: (v) => (Math.abs(v) >= 1000 ? (v < 0 ? '-' : '') + '$' + (Math.abs(v) / 1000).toFixed(Math.abs(v) >= 10000 ? 0 : 1) + 'k' : (v < 0 ? '-$' : '$') + Math.round(Math.abs(v))),
+                  num: (v) => num(v), pct: (v) => Math.round(v * 100) + '%' };
+  const metricShort = (m) => m === 'units' ? SHORT.num : m === 'margin' ? SHORT.pct : SHORT.money;
+  function baseOpts(horiz, fmt, short) {
+    const grid = css('--line-2'), ink = css('--muted');
+    const xt = { color: ink, font: { size: 11 }, maxRotation: 0, autoSkip: true }; if (horiz) xt.callback = (v) => short(v);
+    const yt = { color: horiz ? css('--ink') : ink, font: { size: 11 } };
+    yt.callback = horiz ? function (v) { const s = this.getLabelForValue(v); return s.length > 24 ? s.slice(0, 23) + '…' : s; } : (v) => short(v);
+    return { responsive: true, maintainAspectRatio: false, animation: { duration: 350 }, indexAxis: horiz ? 'y' : 'x',
+      layout: { padding: { right: horiz ? 70 : 8, top: horiz ? 0 : 18 } },
+      plugins: { legend: { display: false }, valueLabels: { fmt }, tooltip: { callbacks: { label: (c) => ' ' + (c.dataset.label ? c.dataset.label + ': ' : '') + fmt(c.parsed[horiz ? 'x' : 'y']) } } },
+      scales: { x: { grid: { color: horiz ? grid : 'transparent' }, ticks: xt, border: { display: false } },
+                y: { grid: { color: horiz ? 'transparent' : grid }, ticks: yt, border: { display: false } } } };
+  }
+  Chart.register(valueLabels);
+  Chart.defaults.font.family = css('--f-body') || 'system-ui';
+
+  function compareInfo() {
+    // one day (one shift or full day) on screen: compare with the latest earlier same weekday in History
+    const fs = [...S.fids].map(fileById); if (!fs.length) return null;
+    const days = new Set(fs.map((f) => f.day + '|' + f.shift)); if (days.size !== 1 || fs[0].day !== fs[0].end) return null;
+    const { day, shift } = fs[0]; const wd = new Date(day + 'T12:00:00').getDay();
+    const prev = [...new Set(HIST.filter((r) => r.date < day && new Date(r.date + 'T12:00:00').getDay() === wd && (r.shift === shift || (shift === 'Full Day'))).map((r) => r.date))].sort().at(-1);
+    if (!prev) return null;
+    const recs = HIST.filter((r) => r.date === prev && S.locs.has(r.loc) && (shift === 'Full Day' ? r.shift !== 'Full Day' || !HIST.some((x) => x.date === prev && x.loc === r.loc && x.shift !== 'Full Day') : r.shift === shift));
+    if (!recs.length) return null;
+    return { date: prev, sales: recs.reduce((a, r) => a + r.sales, 0), units: recs.reduce((a, r) => a + r.units, 0), addon: recs.reduce((a, r) => a + (r.addon || 0), 0) };
+  }
+  function renderView() {
+    if (!S.data) return;
+    const rows = rowsInView(); const hasCost = !!S.data.has_cost; const t = agg(rows); const cmpI = S.q ? null : compareInfo();
+    const k = (lab, val, sub, cls, subcls) => { const d = el('div', 'kpi' + (cls ? ' ' + cls : '')); d.append(el('span', '', lab), el('b', '', val), el('em', subcls || '', sub || '')); return d; };
+    const ch = (cur, old) => { if (!old) return ['', '']; const p = cur / old - 1; return [`${p >= 0 ? '▲' : '▼'} ${Math.abs(p * 100).toFixed(1)}% vs ${dLabel(cmpI.date)}`, p >= 0 ? 'up' : 'down']; };
+    const [sS, sC] = cmpI ? ch(t.sales, cmpI.sales) : ['', ''];
+    const [uS, uC] = cmpI ? ch(t.units, cmpI.units) : ['', ''];
+    const cards = [k('Sales', money(t.sales), sS || `${num(new Set(rows.map((r) => r[1])).size)} location${new Set(rows.map((r) => r[1])).size === 1 ? '' : 's'}`, '', sC),
+      k('Units sold', num(t.units), uS || `${num(new Set(rows.filter((r) => r[6] > 0).map((r) => r[1] + '|' + r[5])).size)} items`, '', uC),
+      k('Avg price', money(t.avg), 'sales ÷ units', 'alt'), k('Add-on sales', money(t.addon), t.sales ? pct(t.addon / t.sales) + ' of sales' : '', 'alt')];
+    if (hasCost) cards.push(k('Cost', money(t.cost), t.costed ? pct(t.cost / t.costed) + ' of costed sales' : '', 'cost'), k('Gross profit', money(t.profit), '', 'cost'),
+      k('Margin', t.margin === null ? '–' : pct(t.margin), `${pct(t.coverage)} of sales have a cost`, 'cost'));
+    else cards.push(k('Cost & margin', 'Add a cost list or a “with Cost” export', '', 'cost off'));
+    $('lvKpis').replaceChildren(...cards);
+    renderCharts(rows); renderTable(rows);
+  }
+  function emptyChart(id, msg) { chart(id, { type: 'bar', data: { labels: [], datasets: [] }, options: { plugins: { legend: { display: false }, title: { display: true, text: msg, color: css('--muted'), font: { weight: 'normal' } } }, scales: { x: { display: false }, y: { display: false } } } }); }
+  function renderCharts(rows) {
+    const m = S.metric; const mlab = METRICS.find((x) => x[0] === m)[1].toLowerCase(); const fmt = fmtM(m);
+    const teal = css('--teal'), gold = css('--gold'), navy = css('--navy-2'), coral = css('--coral'), slate = css('--slate');
+    if (!rows.length) { ['chLoc', 'chItem', 'chMix', 'chTime'].forEach((i) => emptyChart(i, 'Nothing matches the filters')); return; }
+    const top = (gs, n) => gs.filter((g) => mv(g, m) !== -Infinity).sort((a, b) => mv(b, m) - mv(a, m)).slice(0, n);
+    // by location (or venue when many)
+    const lg = top(groups(rows, 'location'), 15);
+    $('chLocT').textContent = `${lg.length < groups(rows, 'location').length ? 'Top 15 locations' : 'Locations'} by ${mlab}`;
+    chart('chLoc', { type: 'bar', data: { labels: lg.map((g) => g.key), datasets: [{ data: lg.map((g) => mv(g, m)), backgroundColor: lg.map((g) => mv(g, m) < 0 ? coral : teal), borderRadius: 5, maxBarThickness: 22 }] }, options: baseOpts(true, fmt, metricShort(m)) });
+    const ig = top(groups(rows, 'item'), 10);
+    $('chItemT').textContent = `Top 10 items by ${mlab}`;
+    chart('chItem', { type: 'bar', data: { labels: ig.map((g) => g.key), datasets: [{ data: ig.map((g) => mv(g, m)), backgroundColor: gold, borderRadius: 5, maxBarThickness: 22 }] }, options: baseOpts(true, fmt, metricShort(m)) });
+    // category mix (additive measure only)
+    const am = ['sales', 'units', 'addon', 'cost', 'profit'].includes(m) && m !== 'profit' ? m : 'sales';
+    const cg = groups(rows, 'category').sort((a, b) => b[am] - a[am]); const head = cg.slice(0, 7); const rest = cg.slice(7).reduce((a, g) => a + g[am], 0);
+    const pal = [teal, navy, gold, coral, slate, css('--teal-2'), '#8e7cc3', '#b8c2cf'];
+    $('chMixT').textContent = 'Category mix'; $('chMixS').textContent = `share of ${am === 'units' ? 'units' : am === 'addon' ? 'add-on sales' : am === 'cost' ? 'cost' : 'sales'}`;
+    chart('chMix', { type: 'doughnut', data: { labels: head.map((g) => g.key).concat(rest > 0 ? ['All other'] : []), datasets: [{ data: head.map((g) => g[am]).concat(rest > 0 ? [rest] : []), backgroundColor: pal, borderColor: css('--panel'), borderWidth: 2 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '58%', animation: { duration: 350 },
+        plugins: { legend: { position: 'right', labels: { color: css('--ink'), boxWidth: 12, font: { size: 11 }, generateLabels: (c) => { const tot = c.data.datasets[0].data.reduce((a, b) => a + b, 0);
+          return c.data.labels.map((l, i) => ({ text: `${l.length > 22 ? l.slice(0, 21) + '…' : l}  ${pct(c.data.datasets[0].data[i] / tot)}`, fillStyle: pal[i], strokeStyle: pal[i], index: i, fontColor: css('--ink') })); } } },
+          tooltip: { callbacks: { label: (c) => ` ${c.label}: ${am === 'units' ? num(c.parsed) : money(c.parsed)}` } } } } });
+    if (window.innerWidth < 640) charts.get('chMix').options.plugins.legend.position = 'bottom', charts.get('chMix').update();
+    // over time
+    const periods = [...new Set(rows.map((r) => r[0]))].map(fileById).sort((a, b) => a.sort.localeCompare(b.sort));
+    $('chTimeNote').hidden = true;
+    if (periods.length >= 2) {
+      const vals = periods.map((f) => { const g = agg(rows.filter((r) => r[0] === f.id)); return mv(g, m) === -Infinity ? null : mv(g, m); });
+      $('chTimeT').textContent = `${METRICS.find((x) => x[0] === m)[1]} by export`; $('chTimeS').textContent = `${periods.length} periods on screen`;
+      const line = m === 'avg' || m === 'margin';
+      chart('chTime', { type: line ? 'line' : 'bar', data: { labels: periods.map((f) => f.label), datasets: [{ data: vals, backgroundColor: periods.map((f) => f.shift === 'Evening' ? navy : teal), borderColor: teal, borderRadius: 5, maxBarThickness: 46, tension: .25, pointRadius: 3 }] }, options: baseOpts(false, fmt, metricShort(m)) });
+    } else {
+      // single period: recent days from History for the same locations
+      const recs = HIST.filter((r) => S.locs.has(r.loc));
+      const byDay = new Map(); for (const r of recs) { const x = byDay.get(r.date) || { full: 0, shifts: 0, locs: new Map() }; byDay.set(r.date, x);
+        if (r.shift === 'Full Day') x.full += r.sales; else x.shifts += r.sales; }
+      const ds = [...byDay.keys()].sort().slice(-20);
+      if (ds.length >= 2 && (m === 'sales')) {
+        $('chTimeT').textContent = 'Recent days from History'; $('chTimeS').textContent = 'same locations, sales per day';
+        const cur = periods[0];
+        chart('chTime', { type: 'bar', data: { labels: ds.map(dLabel), datasets: [{ data: ds.map((d) => { const x = byDay.get(d); return x.shifts || x.full; }), backgroundColor: ds.map((d) => d === cur.day ? gold : teal), borderRadius: 4, maxBarThickness: 30, noLabels: true }] },
+          options: baseOpts(false, money, SHORT.money) });
+      } else {
+        $('chTimeT').textContent = 'Over time'; $('chTimeS').textContent = '';
+        emptyChart('chTime', '');
+        $('chTimeNote').hidden = false;
+        $('chTimeNote').textContent = m !== 'sales' && ds.length >= 2 ? 'Switch the measure to Sales to see recent days from History.' : 'Load two or more exports, or build up History, to see a trend here.';
+      }
+    }
+  }
+  function renderTable(rows) {
+    const hasCost = !!S.data.has_cost; const t = agg(rows);
+    const gl = GROUPS.find((g) => g[0] === S.group)[1];
+    if (!rows.length) { $('lvTable').replaceChildren(); $('tbT').textContent = 'No matches'; $('lvMore').hidden = true; return; }
+    let gs = groups(rows); const sk = S.sort || S.metric;
+    if (S.group === 'day' && !S.sort) gs.sort((a, b) => (S.data.files.find((f) => f.label === a.key)?.sort || '').localeCompare(S.data.files.find((f) => f.label === b.key)?.sort || ''));
+    else if (sk === 'key') gs.sort((a, b) => (S.sortDir < 0 ? 1 : -1) * a.key.localeCompare(b.key));
+    else gs.sort((a, b) => cmp(a, b, sk, S.sortDir) || a.key.localeCompare(b.key));
+    $('tbT').textContent = `${gs.length.toLocaleString()} ${gl === 'Day & shift' ? 'day/shift' : gl.toLowerCase()}${gs.length === 1 ? '' : (gl === 'Category' ? '' : 's')}`.replace('Categorys', 'categories').replace('categorys', 'categories') + (S.q ? ` matching “${S.q.trim()}”` : '');
+    const cols = [['key', gl], ['sales', 'Sales'], ['units', 'Units'], ['avg', 'Avg price'], ['addon', 'Add-ons']].concat(hasCost ? [['cost', 'Cost'], ['profit', 'Profit'], ['margin', 'Margin']] : []).concat([['share', 'Share']]);
+    const thead = el('thead'); const hr = el('tr');
+    for (const [c, lab] of cols) { const th = el('th', '', lab); th.tabIndex = 0; th.scope = 'col';
+      if (sk === c) th.setAttribute('aria-sort', S.sortDir < 0 ? 'descending' : 'ascending');
+      const go = () => { if (c === 'share') { S.sort = 'sales'; S.sortDir = -1; } else if (sk === c) S.sortDir *= -1; else { S.sort = c; S.sortDir = c === 'key' ? 1 : -1; } renderTable(rowsInView()); };
+      th.onclick = go; th.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; hr.append(th); }
+    thead.append(hr);
+    const tb = el('tbody'); const limit = S.showAll ? gs.length : 200; const maxSales = Math.max(...gs.map((g) => g.sales), 1);
+    const row = (g, isTot) => { const tr = el('tr', isTot ? 'total' : (S.group === 'item' ? 'click' : ''));
+      if (!isTot && S.group === 'item') { tr.tabIndex = 0; tr.onclick = () => openItem(g.key); tr.onkeydown = (e) => { if (e.key === 'Enter') openItem(g.key); }; }
+      for (const [c] of cols) { const td = el('td');
+        if (c === 'key') { td.textContent = isTot ? 'Total' : g.key;
+          if (!isTot && S.group === 'item') td.append(el('span', 'subt', [...g.locs].join(', ') + (g.nos.size ? ' · #' + [...g.nos].join(', #') : ''))); }
+        else if (c === 'share') { const p = t.sales ? g.sales / t.sales : 0; if (!isTot) { const b = el('span', 'bar'); b.style.width = Math.max(2, 46 * g.sales / maxSales) + 'px'; td.append(b); } td.append(document.createTextNode(pct(p))); }
+        else if (c === 'margin') { if (g.margin === null) { td.textContent = '–'; td.className = 'na'; } else { td.textContent = pct(g.margin); if (g.margin < 0) td.className = 'neg'; } }
+        else if ((c === 'cost' || c === 'profit') && !g.costed) { td.textContent = '–'; td.className = 'na'; }
+        else { td.textContent = fmtM(c)(g[c]); if (c === 'profit' && g.profit < 0) td.className = 'neg'; }
+        tr.append(td); }
+      return tr; };
+    gs.slice(0, limit).forEach((g) => tb.append(row(g))); tb.append(row(t, true));
+    $('lvTable').replaceChildren(thead, tb);
+    if (gs.length > limit) { $('lvMore').hidden = false; $('lvMore').replaceChildren(document.createTextNode(`Showing 200 of ${gs.length.toLocaleString()}. Excel includes all of them.`));
+      const b = el('button', 'btn ghost', 'Show all'); b.type = 'button'; b.onclick = () => { S.showAll = true; renderTable(rowsInView()); }; $('lvMore').append(b); }
+    else $('lvMore').hidden = true;
+  }
+
+  // ---------- data checks, location names, cost columns
+  function renderFlags() {
+    const fl = S.data.flags || []; const cnt = { error: 0, warning: 0, info: 0 }; fl.forEach((f) => cnt[f.level]++);
+    const names = { error: 'fix first', warning: 'check', info: 'FYI' };
+    const badges = Object.entries(cnt).filter(([, n]) => n).map(([k, n]) => el('span', 'lvl ' + k, n + ' ' + names[k]));
+    if (!fl.length) badges.push(el('span', 'lvl ok', 'all clear'));
+    $('dqBadges').replaceChildren(...badges);
+    const box = $('dqFlags');
+    if (!fl.length) { box.replaceChildren(el('p', 'hint', 'Every export ties to its register totals, with no duplicates, overlaps or cost problems found.')); return; }
+    box.replaceChildren(...fl.map((f) => { const d = el('details', 'flag ' + f.level); const s = el('summary'); s.append(el('span', 'lvl ' + f.level, names[f.level]), el('span', '', `${f.area}: ${f.text}`)); d.append(s);
+      if (f.items.length) { const ul = el('ul'); f.items.forEach((it) => ul.append(el('li', '', it))); if (f.more) ul.append(el('li', '', `…and ${f.more} more (all listed in the Excel file)`)); d.append(ul); }
+      return d; }));
+  }
+  function renderMap() {
+    const d = S.data;
+    $('mapNames').replaceChildren(...[...new Set(d.locations.map((l) => l.name))].map((n) => { const o = el('option'); o.value = n; return o; }));
+    const cats = [...d.catmap].sort((a, b) => (b.guessed - a.guessed) || a.location.localeCompare(b.location) || a.category.localeCompare(b.category));
+    $('mapGrid').replaceChildren(...cats.map((c) => { const r = el('div', 'maprow' + (c.guessed ? ' guess' : ''));
+      const n = el('div', 'cat', c.category); n.append(el('small', '', money0(c.sales)));
+      const i = el('input', 'text'); i.value = c.location; i.setAttribute('list', 'mapNames'); i.setAttribute('aria-label', 'Location for ' + c.category); i.dataset.cat = c.category;
+      i.addEventListener('input', () => { $('mapApply').disabled = false; }); r.append(n, i); return r; }));
+    $('mapApply').disabled = true;
+  }
+  $('mapApply').onclick = () => { for (const i of $('mapGrid').querySelectorAll('input[data-cat]')) { const v = i.value.trim(); if (v) S.mapping[i.dataset.cat] = v; } LS.set('sr_locmap', S.mapping); reload(); };
+  $('mapReset').onclick = () => { S.mapping = {}; LS.set('sr_locmap', {}); reload(); };
+  function renderColPick() {
+    const c = S.data?.cost; const box = $('colPick'); if (!c) { box.hidden = true; return; }
+    box.hidden = false; box.replaceChildren();
+    box.append(el('span', 'eyebrow', 'Cost list columns'));
+    const note = el('p', c.ok ? 'hint' : 'note', c.ok ? `Cost from “${c.headers[c.cols.cost] || 'cost'}”, matched on ${[c.cols.item_no !== undefined ? '“' + c.headers[c.cols.item_no] + '”' : '', c.cols.name !== undefined ? '“' + c.headers[c.cols.name] + '”' : ''].filter(Boolean).join(' then ')}.${c.unused ? ` ${c.unused} listed items weren’t sold in these exports.` : ''}` : c.error);
+    const grid = el('div', 'colpick');
+    const pick = (lab, role) => { const l = el('label', '', lab); const s = el('select', 'text'); s.dataset.role = role; const o0 = el('option', '', '— none —'); o0.value = ''; s.append(o0);
+      c.headers.forEach((h, j) => { if (h) { const o = el('option', '', h); o.value = j; s.append(o); } }); s.value = c.cols[role] !== undefined ? c.cols[role] : ''; l.append(s); return l; };
+    grid.append(pick('Item number', 'item_no'), pick('Item name', 'name'), pick('Cost per unit', 'cost'));
+    const b = el('button', 'btn ghost', 'Use these columns'); b.type = 'button';
+    b.onclick = () => { const cols = {}; for (const s of grid.querySelectorAll('select')) if (s.value !== '') cols[s.dataset.role] = Number(s.value);
+      if (cols.cost === undefined || (cols.item_no === undefined && cols.name === undefined)) { note.className = 'note'; note.textContent = 'Pick a cost column and at least one of item number or item name.'; return; }
+      S.costOverride = { header_row: c.header_row, cols }; reload(); };
+    box.append(note, grid, b);
+  }
+
+  // ---------- item deep dive
+  function openItem(name) {
+    const rows = rowsInView({ ignoreSearch: true }).filter((r) => r[5] === name); if (!rows.length) return;
+    const t = agg(rows); const body = $('dwBody'); body.replaceChildren();
+    const locs = groups(rows, 'location').sort((a, b) => b.sales - a.sales);
+    const nos = [...new Set(rows.map((r) => r[4]).filter(Boolean))];
+    $('dwTitle').textContent = name;
+    $('dwSub').textContent = `${nos.length ? '#' + nos.join(', #') + ' · ' : ''}${locs.length} location${locs.length > 1 ? 's' : ''} · ${[...new Set(rows.map((r) => r[2]))].slice(0, 2).join(', ')}`;
+    const k = (lab, val, cls) => { const d = el('div', 'kpi' + (cls ? ' ' + cls : '')); d.append(el('span', '', lab), el('b', '', val)); return d; };
+    const kp = el('div', 'kpis'); kp.append(k('Units', num(t.units)), k('Sales', money(t.sales)), k('Avg price', money(t.avg), 'alt'), k('Add-on sales', money(t.addon), 'alt'));
+    if (t.costed) kp.append(k('Cost', money(t.cost), 'cost'), k('Margin', t.margin === null ? '–' : pct(t.margin), 'cost'));
+    body.append(kp);
+    // trend from History
+    const hist = HIST.filter((r) => S.locs.has(r.loc)).map((r) => ({ date: r.date, it: (r.items || []).find((x) => x[0] === name) })).filter((x) => x.it);
+    const byD = new Map(); hist.forEach((x) => byD.set(x.date, (byD.get(x.date) || 0) + x.it[2]));
+    const ds = [...byD.keys()].sort().slice(-30);
+    const card = (title, sub) => { const c = el('div', 'card2'); const h = el('div', 'hd'); h.append(el('h2', '', title)); if (sub) h.append(el('span', 'sub', sub)); const b = el('div', 'bd'); c.append(h, b); body.append(c); return b; };
+    if (ds.length >= 2) {
+      const b = card('Units per day', `from History · ${ds.length} days`); const cv = el('div', 'cv'); const can = el('canvas'); can.id = 'chDw'; cv.append(can); b.append(cv);
+      setTimeout(() => chart('chDw', { type: 'line', data: { labels: ds.map(dLabel), datasets: [{ data: ds.map((d) => byD.get(d)), borderColor: css('--teal'), backgroundColor: css('--teal-soft'), fill: true, tension: .3, pointRadius: 2.5 }] },
+        options: Object.assign(baseOpts(false, num, SHORT.num), { plugins: { legend: { display: false }, valueLabels: {}, tooltip: { callbacks: { label: (c) => ` ${num(c.parsed.y)} sold` } } } }) }), 0);
+    }
+    const lb = card('By location'); const tb = el('table', 'mini');
+    tb.innerHTML = '<thead><tr><th>Location</th><th>Units</th><th>Sales</th><th>Avg price</th></tr></thead>';
+    const bd = el('tbody'); locs.forEach((g) => { const tr = el('tr'); [g.key, num(g.units), money(g.sales), money(g.avg)].forEach((v) => tr.append(el('td', '', v))); bd.append(tr); }); tb.append(bd); lb.append(tb);
+    const per = [...new Set(rows.map((r) => r[0]))].map(fileById).sort((a, b) => a.sort.localeCompare(b.sort));
+    if (per.length >= 2) { const pb = card('By export'); const t2 = el('table', 'mini'); t2.innerHTML = '<thead><tr><th>Export</th><th>Units</th><th>Sales</th><th>Avg price</th></tr></thead>';
+      const b2 = el('tbody'); per.forEach((f) => { const g = agg(rows.filter((r) => r[0] === f.id)); const tr = el('tr'); [f.label, num(g.units), money(g.sales), money(g.avg)].forEach((v) => tr.append(el('td', '', v))); b2.append(tr); }); t2.append(b2); pb.append(t2); }
+    const mods = new Map(); for (const l of locs) for (const [n, q, a] of (S.data.mods[l.key + '\u0001' + name] || [])) { const x = mods.get(n) || [0, 0]; x[0] += q; x[1] += a; mods.set(n, x); }
+    if (mods.size) { const mb = card('Add-ons ordered with it', 'in the selected exports'); const t3 = el('table', 'mini'); t3.innerHTML = '<thead><tr><th>Add-on</th><th>Times</th><th>Revenue</th><th>Per item</th></tr></thead>';
+      const b3 = el('tbody'); [...mods.entries()].sort((a, b) => b[1][1] - a[1][1] || b[1][0] - a[1][0]).slice(0, 12).forEach(([n, [q, a]]) => { const tr = el('tr'); [n, num(q), money(a), t.units ? (q / t.units * 100).toFixed(0) + '%' : '–'].forEach((v) => tr.append(el('td', '', v))); b3.append(tr); });
+      t3.append(b3); mb.append(t3); }
+    $('scrim').hidden = false; $('drawer').hidden = false; $('dwClose').focus();
+  }
+  function closeDrawer() { $('drawer').hidden = true; $('scrim').hidden = true; if (charts.has('chDw')) { charts.get('chDw').destroy(); charts.delete('chDw'); } }
+  $('dwClose').onclick = closeDrawer; $('scrim').onclick = closeDrawer;
+
+  // ---------- uploads
+  function wireDrop(node, fn) {
+    node.addEventListener('dragover', (e) => { e.preventDefault(); node.classList.add('over'); });
+    node.addEventListener('dragleave', () => node.classList.remove('over'));
+    node.addEventListener('drop', (e) => { e.preventDefault(); node.classList.remove('over'); fn(e.dataTransfer.files); });
+  }
+  $('lvIn').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
+  wireDrop($('lvDrop'), addFiles);
+  // dropping files anywhere on the Live view also works
+  $('view-live').addEventListener('dragover', (e) => { if (S.data) e.preventDefault(); });
+  $('view-live').addEventListener('drop', (e) => { if (S.data && !e.defaultPrevented) { e.preventDefault(); addFiles(e.dataTransfer.files); } });
+
+  // ---------- exports
+  $('lvXlsx').onclick = async () => {
+    if (!S.data || !rowsInView().length) { toast('Nothing to export with the current filters.'); return; }
+    const allL = S.locs.size === S.data.locations.length;
+    const sel = { fids: [...S.fids], locs: allL ? [] : [...S.locs], search: S.q.trim(), groupby: S.group, metric: S.metric };
+    try { const r = await busy('Building the Excel file…', async () => JSON.parse(py('explore.export(_x)', { _x: JSON.stringify(sel) })));
+      await saveFile(r.name, E.py.FS.readFile(r.file)); } catch (e) { console.error(e); toast('This view could not be exported.'); }
+  };
+  $('lvPdf').onclick = async () => { if (!S.data || !rowsInView().length) { toast('Nothing to export with the current filters.'); return; }
+    try { const { name, bytes } = await busy('Building the PDF…', async () => pdfLive()); await saveFile(name, bytes); } catch (e) { console.error(e); toast('The PDF could not be built.'); } };
+
+  // ================================================================ PDF (vector, built from what's on screen)
+  const asc = (s) => String(s ?? '').replace(/[–—]/g, '-').replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/…/g, '...').replace(/−/g, '-').replace(/▲/g, '+').replace(/▼/g, '-').replace(/[^\x00-\xFF]/g, '');
+  function pdfDoc(title, sub) {
+    const { jsPDF } = window.jspdf; const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+    const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 40;
+    const P = { doc, W, H, M, y: 0 };
+    P.header = () => { doc.setFillColor(31, 42, 68); doc.rect(0, 0, W, 74, 'F'); doc.setFillColor(233, 196, 106); doc.rect(0, 74, W, 3, 'F');
+      doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(20); doc.text(asc(title), M, 38);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(201, 210, 223); doc.text(asc(sub), M, 57, { maxWidth: W - 2 * M }); P.y = 100; };
+    P.need = (h) => { if (P.y + h > H - 46) { doc.addPage(); P.y = 46; } };
+    P.h2 = (t) => { P.need(75); doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(31, 42, 68); doc.text(asc(t), M, P.y); doc.setDrawColor(42, 157, 143); doc.setLineWidth(1.2); doc.line(M, P.y + 5, W - M, P.y + 5); P.y += 20; };
+    P.kpis = (items) => { const per = 4, gap = 10, w = (W - 2 * M - gap * (per - 1)) / per, h = 52;
+      items.forEach((it, i) => { if (i % per === 0) { P.need(h + 10); if (i) P.y += h + gap; } const x = M + (i % per) * (w + gap);
+        doc.setFillColor(244, 246, 249); doc.roundedRect(x, P.y, w, h, 5, 5, 'F'); doc.setFillColor(...(it.c || [42, 157, 143])); doc.rect(x, P.y + 6, 3, h - 12, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(91, 104, 128); doc.text(asc(it.l).toUpperCase(), x + 12, P.y + 16);
+        doc.setFontSize(14.5); doc.setTextColor(26, 36, 54); doc.text(asc(it.v), x + 12, P.y + 35);
+        if (it.s) { doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(91, 104, 128); doc.text(asc(it.s), x + 12, P.y + 46, { maxWidth: w - 16 }); } });
+      P.y += h + 20; };
+    P.table = (cols, rows, opts = {}) => { // cols: [{t, w, a:'l'|'r', bar?}]
+      const rh = 15, x0 = M; const tw = W - 2 * M; const ws = cols.map((c) => c.w * tw);
+      const head = () => { doc.setFillColor(42, 157, 143); doc.rect(x0, P.y, tw, rh + 2, 'F'); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(255, 255, 255);
+        let x = x0; cols.forEach((c, i) => { doc.text(asc(c.t).toUpperCase(), c.a === 'r' ? x + ws[i] - 5 : x + 5, P.y + 11, { align: c.a === 'r' ? 'right' : 'left' }); x += ws[i]; }); P.y += rh + 2; };
+      P.need(rh * 3); head();
+      rows.forEach((r, ri) => { if (P.y + rh > P.H - 46) { doc.addPage(); P.y = 46; head(); }
+        const tot = opts.totalRow && ri === rows.length - 1;
+        if (tot) { doc.setFillColor(226, 243, 240); doc.rect(x0, P.y, tw, rh, 'F'); } else if (ri % 2) { doc.setFillColor(246, 248, 251); doc.rect(x0, P.y, tw, rh, 'F'); }
+        doc.setFont('helvetica', tot ? 'bold' : 'normal'); doc.setFontSize(8.2); doc.setTextColor(26, 36, 54);
+        let x = x0; cols.forEach((c, i) => { let v = asc(r[i]);
+          if (c.bar && !tot && typeof r[c.bar] === 'number') { doc.setFillColor(42, 157, 143); doc.rect(x + 4, P.y + 5, Math.max(1, (ws[i] - 44) * r[c.bar]), 5, 'F'); doc.text(v, x + ws[i] - 5, P.y + 10.5, { align: 'right' }); }
+          else { const maxw = ws[i] - 10; while (doc.getTextWidth(v) > maxw && v.length > 3) v = v.slice(0, -2); if (v !== asc(r[i])) v = v.slice(0, -1) + '...';
+            doc.text(v, c.a === 'r' ? x + ws[i] - 5 : x + 5, P.y + 10.5, { align: c.a === 'r' ? 'right' : 'left' }); }
+          x += ws[i]; });
+        P.y += rh; });
+      P.y += 16; };
+    P.para = (t, color = [91, 104, 128], size = 8.5) => { doc.setFont('helvetica', 'normal'); doc.setFontSize(size); doc.setTextColor(...color);
+      const lines = doc.splitTextToSize(asc(t), W - 2 * M); P.need(lines.length * (size + 3) + 4); doc.text(lines, M, P.y); P.y += lines.length * (size + 3) + 6; };
+    P.finish = (name) => { const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(140, 150, 165);
+      doc.text(`Page ${i} of ${n}`, W - M, H - 22, { align: 'right' }); doc.text('Sales Report Studio', M, H - 22); }
+      return { name, bytes: new Uint8Array(doc.output('arraybuffer')) }; };
+    return P;
+  }
+  function pdfLive() {
+    const rows = rowsInView(); const t = agg(rows); const fs = [...S.fids].map(fileById).sort((a, b) => a.sort.localeCompare(b.sort));
+    const locsOn = new Set(rows.map((r) => r[1]));
+    const sub = `${fs[0].label}${fs.length > 1 ? ' to ' + fs.at(-1).label : ''}   |   ${locsOn.size === S.data.locations.length ? 'All ' + locsOn.size + ' locations' : locsOn.size + ' of ' + S.data.locations.length + ' locations'}${S.q ? '   |   items matching "' + S.q.trim() + '"' : ''}`;
+    const P = pdfDoc('Sales Summary', sub); P.header();
+    const cmpI = S.q ? null : compareInfo();
+    const items = [{ l: 'Sales', v: money(t.sales), s: cmpI ? `${t.sales >= cmpI.sales ? '+' : '-'}${Math.abs((t.sales / cmpI.sales - 1) * 100).toFixed(1)}% vs ${dLabel(cmpI.date)}` : '' },
+      { l: 'Units sold', v: num(t.units) }, { l: 'Avg price', v: money(t.avg), c: [91, 107, 130] }, { l: 'Add-on sales', v: money(t.addon), c: [91, 107, 130] }];
+    if (t.costed) items.push({ l: 'Cost', v: money(t.cost), c: [233, 196, 106] }, { l: 'Gross profit', v: money(t.profit), c: [233, 196, 106] },
+      { l: 'Margin', v: t.margin === null ? '-' : pct(t.margin), c: [233, 196, 106] }, { l: 'Sales with a cost', v: pct(t.coverage), c: [233, 196, 106] });
+    P.kpis(items);
+    const lg = groups(rows, 'location').sort((a, b) => b.sales - a.sales); const mx = Math.max(...lg.map((g) => g.sales), 1);
+    P.h2('Sales by location');
+    const cost = !!t.costed;
+    const lcols = [{ t: 'Location', w: .26 }, { t: 'Sales', w: .15, a: 'r' }, { t: 'Units', w: .1, a: 'r' }, { t: 'Avg price', w: .12, a: 'r' }].concat(cost ? [{ t: 'Margin', w: .1, a: 'r' }] : []).concat([{ t: 'Share', w: cost ? .27 : .37, a: 'r', bar: cost ? 6 : 5 }]);
+    P.table(lcols, lg.map((g) => [g.key, money(g.sales), num(g.units), money(g.avg)].concat(cost ? [g.margin === null ? '-' : pct(g.margin)] : []).concat([pct(t.sales ? g.sales / t.sales : 0), g.sales / mx]))
+      .concat([['Total', money(t.sales), num(t.units), money(t.avg)].concat(cost ? [t.margin === null ? '-' : pct(t.margin)] : []).concat(['100.0%', 0])]), { totalRow: true });
+    const ig = groups(rows, 'item').sort((a, b) => b.sales - a.sales).slice(0, 15);
+    P.h2('Top 15 items');
+    P.table([{ t: 'Item', w: .34 }, { t: 'Location', w: .3 }, { t: 'Units', w: .1, a: 'r' }, { t: 'Sales', w: .13, a: 'r' }, { t: 'Avg price', w: .13, a: 'r' }],
+      ig.map((g) => [g.key, [...g.locs].join(', '), num(g.units), money(g.sales), money(g.avg)]));
+    const cg = groups(rows, 'category').sort((a, b) => b.sales - a.sales).slice(0, 12);
+    P.h2('Top categories');
+    P.table([{ t: 'Category', w: .4 }, { t: 'Location', w: .25 }, { t: 'Sales', w: .15, a: 'r' }, { t: 'Share', w: .2, a: 'r' }], cg.map((g) => [g.key, [...g.locs].join(', '), money(g.sales), pct(t.sales ? g.sales / t.sales : 0)]));
+    const fl = S.data.flags || [];
+    P.h2('Data checks');
+    if (!fl.length) P.para('Every export ties to its register totals, with no duplicates, overlaps or cost problems found.', [31, 138, 91]);
+    else fl.slice(0, 8).forEach((f) => P.para(`${{ error: 'FIX FIRST', warning: 'CHECK', info: 'FYI' }[f.level]}  ${f.area}: ${f.text}${f.items.length ? '  (' + f.items.slice(0, 3).join('; ') + (f.items.length > 3 ? '; ...' : '') + ')' : ''}`, f.level === 'error' ? [196, 69, 47] : [91, 104, 128]));
+    const d0 = fs[0].day, d1 = fs.reduce((a, f) => (f.end > a ? f.end : a), fs[0].end);
+    return P.finish(`Sales_Summary_${d0}${d1 !== d0 ? '_to_' + d1 : ''}.pdf`);
+  }
+
+  // ================================================================ FORECAST
+  let FC = null;
+  function scopeRecords(scope) { return HIST.filter((r) => scope === 'all' ? true : scope.startsWith('v:') ? venueOf(r.loc) === scope.slice(2) : r.loc === scope.slice(2)); }
+  function fillScope() {
+    const sel = $('fcScope'); const cur = sel.value || LS.get('srs_fc_scope', '');
+    const days = (recs) => new Set(recs.map((r) => r.date)).size;
+    const opts = [];
+    for (const v of VENUES) { const rs = HIST.filter((r) => venueOf(r.loc) === v); if (rs.length) opts.push(['v:' + v, `${v} (${days(rs)} days)`]); }
+    if (opts.length > 1) opts.push(['all', `All stored locations (${days(HIST)} days)`]);
+    const locs = [...new Set(HIST.map((r) => r.loc))].sort();
+    sel.replaceChildren(...opts.map(([v, t]) => { const o = el('option', '', t); o.value = v; return o; }));
+    if (locs.length) { const g = el('optgroup'); g.label = 'One location'; locs.forEach((l) => { const o = el('option', '', `${l} (${days(HIST.filter((r) => r.loc === l))} days)`); o.value = 'l:' + l; g.append(o); }); sel.append(g); }
+    if ([...sel.options].some((o) => o.value === cur)) sel.value = cur;
+  }
+  function fcRun(ready) {
+    const scope = $('fcScope').value; if (!scope) return null;
+    const ex = LS.get('srs_fc_exclude', []), inc = LS.get('srs_fc_include', []);
+    return JSON.parse(py('forecast.build(_r, _o)', { _r: JSON.stringify(scopeRecords(scope)), _o: JSON.stringify({ horizon: Number($('fcHorizon').value), exclude: ex, include: inc }) }));
+  }
+  async function fcStatus() {
+    await refreshHistory(); fillScope();
+    if (!E || !HIST.length) { $('fcDays').innerHTML = '0 <small>trading days</small>'; $('fcBar').style.width = '0%'; $('fcGo').disabled = true;
+      $('fcStatus').textContent = HIST.length ? '' : 'Nothing stored yet. Load daily exports in Live report with “Remember for forecasting” on, or import a history backup in History.'; return; }
+    const R = fcRun();
+    if (!R) return;
+    const st = R.status; $('fcDays').innerHTML = `${st.training_days} <small>usable trading days of ${st.days} stored</small>`;
+    $('fcBar').style.width = Math.min(100, st.training_days / st.needed * 100) + '%';
+    $('fcStatus').textContent = R.ready ? `${dLabel(st.first)} to ${dLabel(st.last)} · ${st.weeks} weeks · enough history to forecast.` : R.message;
+    $('fcGo').disabled = !R.ready; $('fcGoNote').textContent = R.ready ? '' : 'Unlocks once enough days are stored.';
+    const un = R.history.filter((h) => h.unusual); const inc = new Set(LS.get('srs_fc_include', []));
+    const box = $('fcUnusual');
+    box.replaceChildren(...(un.length ? un.map((h) => chk(`${dLabel(h.date)} · ${h.unusual}`, money0(h.total), inc.has(h.date), (on) => { const s = new Set(LS.get('srs_fc_include', [])); on ? s.add(h.date) : s.delete(h.date); LS.set('srs_fc_include', [...s]); fcStatus(); })) : [el('p', 'hint', 'None found.')]));
+  }
+  $('fcScope').onchange = () => { LS.set('srs_fc_scope', $('fcScope').value); $('fcOut').hidden = true; FC = null; $('fcXlsx').disabled = $('fcPdf').disabled = true; fcStatus(); };
+  $('fcHorizon').onchange = () => { if (FC) $('fcGo').click(); };
+  $('fcGo').onclick = async () => {
+    const R = await busy('Training on your history…', async () => fcRun());
+    if (!R || !R.ready) { toast(R ? R.message : 'Pick what to forecast.'); return; }
+    FC = R; renderForecast(); $('fcXlsx').disabled = $('fcPdf').disabled = false;
+  };
+  function renderForecast() {
+    const R = FC; $('fcOut').hidden = false; const f0 = R.forecast[0];
+    const k = (lab, val, sub, cls) => { const d = el('div', 'kpi' + (cls ? ' ' + cls : '')); d.append(el('span', '', lab), el('b', '', val), el('em', '', sub || '')); return d; };
+    $('fcKpis').replaceChildren(k(`Next: ${dLabel(f0.date)}`, money0(f0.total), `likely ${money0(f0.lo)} – ${money0(f0.hi)}`),
+      k('Morning / Evening', f0.morning ? `${money0(f0.morning)} / ${money0(f0.evening)}` : '–', f0.morning ? 'split from recent same weekdays' : 'needs shift exports', 'alt'),
+      k(`Next ${R.forecast.length} trading days`, money0(R.forecast.reduce((a, f) => a + f.total, 0)), `${dLabel(R.forecast[0].date)} – ${dLabel(R.forecast.at(-1).date)}`),
+      k('Typical error', '±' + pct(R.accuracy.mape), `tested on ${R.accuracy.tested_days} past days`, 'cost'),
+      k('Method', R.method_name, 'chosen by the lowest past error', 'alt txt'));
+    const hist = R.history.slice(-25); const labels = hist.map((h) => dLabel(h.date)).concat(R.forecast.map((f) => dLabel(f.date)));
+    const n = hist.length; const pad = (arr, before) => Array(before).fill(null).concat(arr);
+    const teal = css('--teal'), gold = css('--gold');
+    chart('chFc', { type: 'line', data: { labels, datasets: [
+      { label: 'High', data: pad(R.forecast.map((f) => f.hi), n), borderColor: 'transparent', backgroundColor: 'rgba(233,196,106,.22)', fill: '+1', pointRadius: 0 },
+      { label: 'Low', data: pad(R.forecast.map((f) => f.lo), n), borderColor: 'transparent', backgroundColor: 'transparent', fill: false, pointRadius: 0 },
+      { label: 'Actual', data: hist.map((h) => h.total).concat(Array(R.forecast.length).fill(null)), borderColor: teal, backgroundColor: teal, tension: .25, pointRadius: hist.map((h) => h.excluded ? 5 : 2.5), pointBackgroundColor: hist.map((h) => h.excluded ? css('--coral') : teal) },
+      { label: 'Forecast', data: Array(n - 1).fill(null).concat([hist.at(-1).total]).concat(R.forecast.map((f) => f.total)), borderColor: gold, backgroundColor: gold, borderDash: [6, 5], tension: .25, pointRadius: [0].concat(R.forecast.map(() => 4)).concat([]) } ] },
+      options: Object.assign(baseOpts(false, money0, SHORT.money), { plugins: { legend: { display: true, labels: { color: css('--ink'), filter: (i) => i.text === 'Actual' || i.text === 'Forecast', boxWidth: 12 } },
+        valueLabels: {}, tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${money0(c.parsed.y)}` } } } }) });
+    // table
+    const locs = R.locations.filter((l) => R.forecast.some((f) => f.locs[l]));
+    $('fcLocSub').textContent = 'expected sales · range in tooltip';
+    const th = el('thead'); const hr = el('tr'); hr.append(el('th', '', 'Location')); R.forecast.forEach((f) => hr.append(el('th', '', dLabel(f.date)))); hr.append(el('th', '', 'Typical error')); th.append(hr);
+    const tb = el('tbody');
+    locs.forEach((l) => { const tr = el('tr'); tr.append(el('td', '', l)); R.forecast.forEach((f) => { const v = f.locs[l]; const td = el('td', '', v ? money0(v.value) : '–'); if (v) td.title = `${money0(v.lo)} – ${money0(v.hi)}`; tr.append(td); });
+      const e = R.loc_accuracy[l]; tr.append(el('td', e === null || e === undefined ? 'na' : '', e === null || e === undefined ? '–' : '±' + pct(e))); tb.append(tr); });
+    const tot = el('tr', 'total'); tot.append(el('td', '', 'Day total')); R.forecast.forEach((f) => tot.append(el('td', '', money0(f.total)))); tot.append(el('td', '', '±' + pct(R.accuracy.mape))); tb.append(tot);
+    $('fcTable').replaceChildren(th, tb);
+    // prep
+    const pl = Object.keys(R.prep.items).sort((a, b) => locs.indexOf(a) - locs.indexOf(b));
+    $('fcPrepT').textContent = `Prep list for ${dLabel(R.prep.date)}`;
+    const ps = $('fcPrepLoc'); const prev = ps.value; ps.replaceChildren(...pl.map((l) => { const o = el('option', '', l); o.value = l; return o; })); if (pl.includes(prev)) ps.value = prev;
+    renderPrep();
+    $('fcNote').textContent = `The forecast learns from past weekdays only. It doesn’t know about holidays, breaks or events ahead (Thanksgiving week, finals, home games), so adjust for those by hand.` +
+      (R.excluded.length ? ` Left out of training: ${R.excluded.map((x) => dLabel(x.date) + ' (' + x.why + ')').join('; ')}.` : '');
+  }
+  function renderPrep() {
+    const R = FC; const l = $('fcPrepLoc').value; const items = (R.prep.items[l] || []);
+    const th = el('thead'); th.innerHTML = '<tr><th>Item</th><th>Item #</th><th>Expected units</th><th>Expected sales</th><th>Based on</th></tr>';
+    const tb = el('tbody'); items.forEach((it) => { const tr = el('tr'); [it.item, it.no || '–', num(Math.ceil(it.units)), money0(it.sales), it.basis ? `${it.basis} past ${new Date(R.prep.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' })}${it.basis > 1 ? 's' : ''}` : 'recent days'].forEach((v) => tr.append(el('td', '', v))); tb.append(tr); });
+    $('fcPrep').replaceChildren(th, tb);
+  }
+  $('fcPrepLoc').onchange = renderPrep;
+  $('fcXlsx').onclick = async () => { if (!FC) return; try { const r = await busy('Building the Excel file…', async () => JSON.parse(py('forecast.export_xlsx(_f)', { _f: JSON.stringify(FC) }))); await saveFile(r.name, E.py.FS.readFile(r.file)); } catch (e) { console.error(e); toast('The forecast could not be exported.'); } };
+  $('fcPdf').onclick = async () => { if (!FC) return; try { const { name, bytes } = await busy('Building the PDF…', async () => pdfForecast()); await saveFile(name, bytes); } catch (e) { console.error(e); toast('The PDF could not be built.'); } };
+  function pdfForecast() {
+    const R = FC; const f0 = R.forecast[0], fl = R.forecast.at(-1);
+    const scopeTxt = $('fcScope').selectedOptions[0]?.textContent.replace(/\s*\(.*\)$/, '') || '';
+    const P = pdfDoc('Sales Forecast', `${scopeTxt}   |   ${dLabel(f0.date)} to ${dLabel(fl.date)}   |   based on ${R.status.training_days} trading days (${dLabel(R.status.first)} to ${dLabel(R.status.last)})`); P.header();
+    P.kpis([{ l: 'Next: ' + dLabel(f0.date), v: money0(f0.total), s: `likely ${money0(f0.lo)} - ${money0(f0.hi)}` },
+      { l: 'Morning / Evening', v: f0.morning ? `${money0(f0.morning)} / ${money0(f0.evening)}` : '-', c: [91, 107, 130] },
+      { l: `Next ${R.forecast.length} days`, v: money0(R.forecast.reduce((a, f) => a + f.total, 0)) },
+      { l: 'Typical error', v: '+/-' + pct(R.accuracy.mape), s: `tested on ${R.accuracy.tested_days} past days`, c: [233, 196, 106] }]);
+    const locs = R.locations.filter((l) => R.forecast.some((f) => f.locs[l]));
+    P.h2('Expected sales by location');
+    const days = R.forecast.slice(0, 5); const w = .62 / days.length;
+    P.table([{ t: 'Location', w: .26 }].concat(days.map((f) => ({ t: dLabel(f.date), w, a: 'r' }))).concat([{ t: 'Typ. error', w: .12, a: 'r' }]),
+      locs.map((l) => [l].concat(days.map((f) => f.locs[l] ? money0(f.locs[l].value) : '-')).concat([R.loc_accuracy[l] === null || R.loc_accuracy[l] === undefined ? '-' : '+/-' + pct(R.loc_accuracy[l])]))
+        .concat([['Day total'].concat(days.map((f) => money0(f.total))).concat(['+/-' + pct(R.accuracy.mape)])]), { totalRow: true });
+    P.h2(`Prep list for ${dLabel(R.prep.date)}`);
+    for (const l of locs) { const its = (R.prep.items[l] || []).slice(0, 8); if (!its.length) continue;
+      P.need(30 + its.length * 15); P.doc.setFont('helvetica', 'bold'); P.doc.setFontSize(9.5); P.doc.setTextColor(31, 42, 68); P.doc.text(asc(l), P.M, P.y); P.y += 8;
+      P.table([{ t: 'Item', w: .5 }, { t: 'Item #', w: .18 }, { t: 'Expected units', w: .16, a: 'r' }, { t: 'Expected sales', w: .16, a: 'r' }], its.map((it) => [it.item, it.no || '-', num(Math.ceil(it.units)), money0(it.sales)])); }
+    P.h2('About this forecast');
+    P.para(`Method: ${R.method_name}, chosen because it had the lowest error when each past day was predicted from the days before it (typical error +/-${pct(R.accuracy.mape)} over ${R.accuracy.tested_days} days). The range covers 8 in 10 of those past days.`);
+    if (R.excluded.length) P.para('Left out of training as unusual: ' + R.excluded.map((x) => `${dLabel(x.date)} (${x.why})`).join('; ') + '.');
+    P.para('It does not know about holidays, breaks or events ahead, so adjust for those by hand.', [138, 90, 11]);
+    return P.finish(`Sales_Forecast_${f0.date}_to_${fl.date}.pdf`);
+  }
+
+  // ================================================================ HISTORY
+  async function renderHistory() {
+    await refreshHistory();
+    const byDate = new Map(); for (const r of HIST) { const x = byDate.get(r.date) || { shifts: new Set(), locs: new Set(), total: 0, venues: new Set(), full: 0, sh: 0 }; byDate.set(r.date, x);
+      x.shifts.add(r.shift); x.locs.add(r.loc); x.venues.add(venueOf(r.loc)); if (r.shift === 'Full Day') x.full += r.sales; else x.sh += r.sales; }
+    const dates = [...byDate.keys()].sort().reverse();
+    const k = (lab, val, sub) => { const d = el('div', 'kpi'); d.append(el('span', '', lab), el('b', '', val), el('em', '', sub || '')); return d; };
+    $('hsKpis').replaceChildren(k('Days stored', num(dates.length), dates.length ? `${dLabel(dates.at(-1))} – ${dLabel(dates[0])}` : 'nothing yet'),
+      k('Locations', num(new Set(HIST.map((r) => r.loc)).size), [...new Set(HIST.map((r) => venueOf(r.loc)))].join(', ')),
+      k('Records', num(HIST.length), 'one per day, shift and location'), k('Storage', Store.db ? 'This browser' : 'This visit only', Store.db ? 'kept between visits' : 'browser storage is blocked'));
+    $('hsOut').disabled = $('hsClear').disabled = !HIST.length;
+    const ex = new Set(LS.get('srs_fc_exclude', []));
+    const th = el('thead'); th.innerHTML = '<tr><th>Day</th><th>Shifts</th><th>Venues</th><th>Locations</th><th>Sales</th><th>Use for forecast</th><th></th></tr>';
+    const tb = el('tbody');
+    for (const d of dates) { const x = byDate.get(d); const tr = el('tr');
+      tr.append(el('td', '', dLabel(d)), el('td', '', [...x.shifts].sort().join(', ')), el('td', '', [...x.venues].join(', ')), el('td', '', num(x.locs.size)), el('td', '', money(x.sh + x.full)));
+      const td = el('td'); const cb = el('input'); cb.type = 'checkbox'; cb.checked = !ex.has(d); cb.setAttribute('aria-label', 'Use ' + d + ' for forecasting');
+      cb.onchange = () => { const s = new Set(LS.get('srs_fc_exclude', [])); cb.checked ? s.delete(d) : s.add(d); LS.set('srs_fc_exclude', [...s]); }; td.append(cb); tr.append(td);
+      const td2 = el('td'); const rm = el('button', 'link', 'Remove'); rm.type = 'button';
+      rm.onclick = async () => { if (rm.dataset.armed) { await Store.delWhere((r) => r.date === d); toast('Removed ' + dLabel(d) + ' from History.'); renderHistory(); } else { rm.dataset.armed = '1'; rm.textContent = 'Click again to remove'; setTimeout(() => { delete rm.dataset.armed; rm.textContent = 'Remove'; }, 3500); } };
+      td2.append(rm); tr.append(td2); tb.append(tr); }
+    if (!dates.length) { const tr = el('tr'); const td = el('td', '', 'Nothing stored yet. Load daily exports in Live report, or import a backup.'); td.colSpan = 7; td.style.color = css('--muted'); tr.append(td); tb.append(tr); }
+    $('hsTable').replaceChildren(th, tb);
+  }
+  $('hsIn').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try { const j = JSON.parse(await f.text()); const recs = (j.records || []).filter((r) => r && /^\d{4}-\d{2}-\d{2}$/.test(r.date) && ['Morning', 'Evening', 'Full Day'].includes(r.shift) && r.loc && typeof r.sales === 'number');
+      if (j.kind !== 'history' || !recs.length) throw new Error('not a backup');
+      recs.forEach((r) => { r.id = `${r.date}|${r.shift}|${r.loc}`; });
+      const { added, updated } = await Store.upsert(recs); toast(`Imported ${new Set(recs.map((r) => r.date)).size} days (${added} new, ${updated} updated records).`, 4500); renderHistory();
+    } catch (err) { toast('That file isn’t a Sales Report Studio history backup.'); }
+  };
+  $('hsOut').onclick = async () => { const recs = (await Store.all()).map((r) => { const o = Object.assign({}, r); delete o.id; return o; });
+    const dates = recs.map((r) => r.date).sort();
+    const blob = JSON.stringify({ app: 'sales-report-studio', version: 1, kind: 'history', records: recs });
+    await saveFile(`Sales_History_${dates[0]}_to_${dates.at(-1)}.json`, new TextEncoder().encode(blob)); };
+  $('hsClear').onclick = async () => { const b = $('hsClear');
+    if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Click again to delete everything'; $('hsClearNote').textContent = 'This can’t be undone. Save a backup first if you may need it.';
+      setTimeout(() => { b.classList.remove('armed'); b.textContent = 'Clear all history'; $('hsClearNote').textContent = ''; }, 4000); return; }
+    await Store.delWhere(() => true); b.classList.remove('armed'); b.textContent = 'Clear all history'; $('hsClearNote').textContent = ''; toast('History cleared.'); renderHistory(); };
+
+  // ================================================================ start
+  (async () => {
+    await Store.open(); await refreshHistory();
+    const h = location.hash.slice(1); show(['forecast', 'reports', 'history'].includes(h) ? h : 'live');
+  })();
+  document.addEventListener('engine-ready', async () => { E = window.__engine; await intake(); if (!$('view-forecast').hidden) fcStatus(); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (S.data) renderView(); if (FC) renderForecast(); });
+})();
+</script>
+
+<script>
+(() => {
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
   }
@@ -823,7 +1476,7 @@ table.data td.na { color: var(--muted) }
     if (standalone || document.getElementById('installBtn')) return;
     const b = document.createElement('button'); b.id = 'installBtn'; b.className = 'installbtn'; b.type = 'button'; b.textContent = 'Install app';
     b.onclick = async () => { if (!deferred) return; deferred.prompt(); await deferred.userChoice.catch(() => {}); deferred = null; b.remove(); };
-    const eng = document.getElementById('engine'); eng.parentNode.insertBefore(b, eng);
+    const eng = document.getElementById('engine'); eng.parentNode.insertBefore(b, eng); b.style.marginBottom = '2px';
   });
   window.addEventListener('appinstalled', () => { const b = document.getElementById('installBtn'); if (b) b.remove(); });
 })();
